@@ -1,0 +1,327 @@
+<UserControl x:Class="POS_UI.View.RefundFlowDialog"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             xmlns:converters="clr-namespace:POS_UI.Converters"
+             Width="400">
+    <UserControl.Style>
+        <Style TargetType="UserControl">
+            <Setter Property="MinHeight" Value="450"/>
+            <Setter Property="Height" Value="450"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsAmountStep}" Value="True">
+                    <Setter Property="Height" Value="420"/>
+                    <Setter Property="MinHeight" Value="420"/>
+                    <Setter Property="MaxHeight" Value="420"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+    </UserControl.Style>
+    <UserControl.Resources>
+        <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+        <converters:CurrencyFormatConverter x:Key="CurrencyFormatConverter"/>
+        <converters:StringToVisibilityConverter x:Key="StringToVisibilityConverter"/>
+        <converters:StringEqualsConverter x:Key="StringEqualsConverter"/>
+    </UserControl.Resources>
+    <Border Background="White" CornerRadius="10" Padding="15" BorderThickness="0">
+        <Border.Effect>
+            <DropShadowEffect Color="Black" Direction="270" ShadowDepth="5" BlurRadius="10" Opacity="0.1"/>
+        </Border.Effect>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Header with Order Info -->
+            <Grid Grid.Row="0" Margin="0,0,0,15">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                
+                    <!--<TextBlock Text="Refunds" FontSize="20" FontWeight="Bold" Foreground="#FF434343"/>-->
+                    <StackPanel Orientation="Vertical">
+                        <StackPanel Orientation="Horizontal">
+                            <Button Style="{StaticResource MaterialDesignOutlinedButton}" Padding="6"  Margin="0,0,10,0"
+                                    Command="{Binding BackToOrderCommand}">
+                                <materialDesign:PackIcon Kind="ArrowBackCircle" Width="22" Height="20"/>
+                            </Button>
+                            <TextBlock Text="Order " FontSize="18" FontWeight="Bold" VerticalAlignment="Center" Margin="0,0,0,0"/>
+                            <TextBlock Text="{Binding OrderNumber, Mode=OneWay}" FontSize="18" FontWeight="Bold" VerticalAlignment="Center" Margin="0,0,30,0"/>
+                        </StackPanel>
+                        <TextBlock FontSize="12" Foreground="#666" Margin="45,-3,0,0"
+                                   Text="{Binding Order.OrderSessionId, StringFormat=Session # {0}}">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Order.OrderSessionId}" Value="{x:Null}">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding Order.OrderSessionId}" Value="0">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                    </StackPanel>
+               
+                <Button Grid.Column="1" Style="{StaticResource MaterialDesignOutlinedButton}" HorizontalContentAlignment="Right"
+                        Height="37" Width="105">
+                    <TextBlock Text="{Binding TableButtonText, Mode=OneWay}" />
+                </Button>
+                <!-- Close Button -->
+                <Button Grid.Column="2" Style="{StaticResource MaterialDesignToolButton}"
+                        Command="{x:Static materialDesign:DialogHost.CloseDialogCommand}"
+                        VerticalAlignment="Top" Margin="5,0,-5,0"
+                        ToolTip="Close">
+                    <materialDesign:PackIcon Kind="Close" Width="24" Height="24"/>
+                </Button>
+            </Grid>
+
+            <Grid Grid.Row="1" Margin="0,0,0,0" VerticalAlignment="Center">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="90"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="50"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Shipping Method: Yellow background, black foreground -->
+                <Border Grid.Column="0" Background="#FFFFA600" CornerRadius="6" Padding="8,4" VerticalAlignment="Center">
+                    <TextBlock Text="{Binding ShippingMethodText}" Foreground="Black"  FontWeight="Bold" TextAlignment="Center" />
+                </Border>
+                <Border Grid.Column="1" CornerRadius="6" Margin="5,0,5,0" Background="#FFE6E6E6" Padding="8,4" VerticalAlignment="Center">
+                    <TextBlock Text="{Binding DeliveryPlatformName}"  Foreground="Black"  FontWeight="Bold" TextAlignment="Center" TextWrapping="Wrap"/>
+                </Border>
+
+                <!-- Badges -->
+
+                <!-- Platform Logo (if available) -->
+                <Image Grid.Column="3" Height="32" Stretch="Uniform" Width="50" Margin="0,0,8,0"
+                       Source="{Binding PlatformLogo}" HorizontalAlignment="Right"
+                       Visibility="{Binding PlatformLogo, Converter={StaticResource StringToVisibilityConverter}}"/>
+                <!-- Payment Status: Red background, white foreground; hide when empty -->
+                <Border Grid.Column="2" Background="Red" CornerRadius="6" Padding="8,4" Margin="0,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Right"
+                        Visibility="{Binding PaymentStatus, Converter={StaticResource StringToVisibilityConverter}}">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="{Binding PaymentStatus}" Foreground="White" FontWeight="Bold"/>
+                        <TextBlock Text="{Binding PaymentMode, StringFormat=' - {0}'}" 
+                        Foreground="White" FontWeight="Bold"
+                        Visibility="{Binding PaymentStatus, Converter={StaticResource StringToVisibilityConverter}, ConverterParameter=PAID|PAID -}"/>
+                    </StackPanel>
+                </Border>
+
+
+            </Grid>
+            <!-- Step Content -->
+            <Grid Grid.Row="2" Margin="0,10,0,20">
+                <!-- Step 1: Amount Entry -->
+                <StackPanel Visibility="{Binding IsAmountStep, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <TextBlock Text="Order Total : " FontSize="14" Margin="0,5,0,10">
+                        <Run Text="{Binding OrderTotal, Converter={StaticResource CurrencyFormatConverter}, Mode=OneWay}" FontWeight="Bold"/>
+                    </TextBlock>
+                    <TextBlock Text="Session Total : " FontSize="14" Margin="0,0,0,5"
+                               Visibility="{Binding ShowSessionTotal, Converter={StaticResource BooleanToVisibilityConverter}}">
+                        <Run Text="{Binding SessionTotalAmount, Mode=OneWay}" FontWeight="Bold"/>
+                    </TextBlock>
+                    <TextBlock FontSize="14" Margin="0,5,0,10">
+                        <Run Text="{Binding RefundableAmountLabel, Mode=OneWay}" />
+                        <Run Text="{Binding RefundBalance, Converter={StaticResource CurrencyFormatConverter}, Mode=OneWay}" Foreground="Red" FontWeight="Bold"/>
+                    </TextBlock>
+                    <TextBlock Text="Please enter the refund amount" FontSize="14" Margin="0,5,0,10" Foreground="#666"/>
+                    <TextBox Text="{Binding RefundAmountText, UpdateSourceTrigger=PropertyChanged}" 
+                            IsReadOnly="{Binding IsRefundAmountReadOnly}"
+                            FontSize="24" FontWeight="Bold" Padding="10" 
+                            HorizontalContentAlignment="Left" 
+                            BorderBrush="Black" BorderThickness="1" 
+                            materialDesign:HintAssist.Hint="0.00" materialDesign:HintAssist.IsFloating="False" Width="357"/>
+                    <!-- Insufficient cash drawer balance (same message/behavior as former mode step; validated when refund mode is Cash) -->
+                    <Border Background="Red" HorizontalAlignment="Center"
+                            CornerRadius="5" Margin="0,10,0,0"
+                            Visibility="{Binding ShowCashDrawerBalanceErrorOnAmountStep, Converter={StaticResource BooleanToVisibilityConverter}}">
+                        <TextBlock Text="{Binding CashDrawerBalanceErrorForModeStep}"
+                              Foreground="White" TextAlignment="Center"
+                              FontSize="13" Padding="5"
+                              FontWeight="SemiBold"
+                              TextWrapping="Wrap"/>
+                    </Border>
+                </StackPanel>
+
+                <!-- Step 2: Reason Selection -->
+                <StackPanel Visibility="{Binding IsReasonStep, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <TextBlock Text="Please select a reason for refund" FontSize="14" Margin="0,5,0,15" Foreground="#666"/>
+                    <ItemsControl ItemsSource="{Binding RefundReasons}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <CheckBox Content="{Binding}" FontSize="14" Margin="0,10,0,5"
+                                         Command="{Binding DataContext.SelectReasonCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                         CommandParameter="{Binding}">
+                                    <CheckBox.IsChecked>
+                                        <MultiBinding Converter="{StaticResource StringEqualsConverter}" Mode="OneWay">
+                                            <Binding Path="DataContext.SelectedReason" RelativeSource="{RelativeSource AncestorType=UserControl}"/>
+                                            <Binding Path="."/>
+                                        </MultiBinding>
+                                    </CheckBox.IsChecked>
+                                </CheckBox>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <TextBox Text="{Binding OtherReason, UpdateSourceTrigger=PropertyChanged}" 
+                            FontSize="14" Padding="10" Margin="0,10,0,0"
+                            Visibility="{Binding IsOtherReason, Converter={StaticResource BooleanToVisibilityConverter}}"
+                            materialDesign:HintAssist.Hint="Enter reason"
+                            materialDesign:HintAssist.IsFloating="False"/>
+                </StackPanel>
+
+                <!-- Step 3: Mode Selection -->
+                <StackPanel Visibility="{Binding IsModeStep, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <TextBlock Text="Select a Refund Mode" FontSize="14" Margin="0,5,0,15" Foreground="#666"/>
+                    <ItemsControl ItemsSource="{Binding RefundModes}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <RadioButton Content="{Binding}" FontSize="14" Margin="0,10,0,5" GroupName="RefundMode"
+                                           Command="{Binding DataContext.SelectModeCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                           CommandParameter="{Binding}">
+                                    <RadioButton.IsChecked>
+                                        <MultiBinding Converter="{StaticResource StringEqualsConverter}" Mode="OneWay">
+                                            <Binding Path="DataContext.SelectedMode" RelativeSource="{RelativeSource AncestorType=UserControl}"/>
+                                            <Binding Path="."/>
+                                        </MultiBinding>
+                                    </RadioButton.IsChecked>
+                                </RadioButton>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <Border Background="Red" BorderBrush="Red" BorderThickness="1"
+                            CornerRadius="5" Margin="0,10,0,0" Padding="8"
+                            Visibility="{Binding ShowCardRefundBalanceZeroWarning, Converter={StaticResource BooleanToVisibilityConverter}}">
+                        <TextBlock Text="{Binding CardRefundBalanceZeroMessage}"
+                                   Foreground="White" TextAlignment="Center"
+                                   FontSize="13" FontWeight="Bold"
+                                   TextWrapping="Wrap"/>
+                    </Border>
+                </StackPanel>
+
+                <!-- Step 4: Summary -->
+                <StackPanel Visibility="{Binding IsSummaryStep, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <TextBlock Text="Refund Summary" FontSize="16" FontWeight="Bold" Margin="0,10,0,15"/>
+                    <StackPanel>
+                        <Grid Margin="0,5,0,5">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="Refund Reason : " FontSize="14"/>
+                            <TextBlock Grid.Column="1" Text="{Binding FinalReason, Mode=OneWay}" FontSize="14" FontWeight="Bold" Foreground="#1976D2"/>
+                        </Grid>
+                        <Grid Margin="0,5,0,5">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="Refund Mode : " FontSize="14"/>
+                            <TextBlock Grid.Column="1" Text="{Binding SummaryRefundModeDisplay, Mode=OneWay}" FontSize="14" FontWeight="Bold" Foreground="#1976D2"/>
+                        </Grid>
+                        <Grid Margin="0,5,0,5">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="Refund Amount : " FontSize="14"/>
+                            <TextBlock Grid.Column="1" Text="{Binding RefundAmount, Converter={StaticResource CurrencyFormatConverter}}" 
+                                      FontSize="14" FontWeight="Bold" Foreground="Red"/>
+                        </Grid>
+                    </StackPanel>
+                    <!-- Cash drawer balance error - shown when order payment mode is cash and balance is insufficient (summary step) -->
+                    <Border Background="Red" HorizontalAlignment="Center"
+                            CornerRadius="5" Margin="0,10,0,0"
+                            Visibility="{Binding ShowCashDrawerBalanceErrorInSummary, Converter={StaticResource BooleanToVisibilityConverter}}">
+                        <TextBlock Text="{Binding CashDrawerBalanceErrorForSummary}"
+                                    Foreground="White" TextAlignment="Center"
+                                    FontSize="13" Padding="5"
+                                    FontWeight="SemiBold"
+                                    TextWrapping="Wrap"/>
+                    </Border>
+                </StackPanel>
+            </Grid>
+
+            <!-- Navigation Buttons -->
+            <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Center">
+                <Button Content="Back" Width="100" Height="36" Margin="0,0,10,0"
+                       Command="{Binding BackCommand}"
+                       Visibility="{Binding CanGoBack, Converter={StaticResource BooleanToVisibilityConverter}}"
+                       Style="{StaticResource MaterialDesignOutlinedButton}"/>
+                <Button Content="Next" Width="100" Height="36" Margin="0,0,10,0"
+                       Command="{Binding NextCommand}"
+                       Visibility="{Binding IsSummaryStep, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter=Invert}"
+                       Background="#1976D2" Foreground="White"/>
+                <!-- Confirm Refund button - only visible when NOT in cancel order flow and on summary step -->
+                <Button Content="Confirm Refund" Width="140" Height="36" Margin="0,0,10,0"
+                       Command="{Binding ConfirmRefundCommand}"
+                       IsEnabled="{Binding CanConfirmRefund}"
+                       Background="#1976D2" Foreground="White" BorderThickness="0">
+                    <Button.Style>
+                        <Style TargetType="Button" BasedOn="{StaticResource MaterialDesignRaisedButton}">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                            <Style.Triggers>
+                                <MultiDataTrigger>
+                                    <MultiDataTrigger.Conditions>
+                                        <Condition Binding="{Binding IsSummaryStep}" Value="True"/>
+                                        <Condition Binding="{Binding IsCancelOrderFlow}" Value="False"/>
+                                    </MultiDataTrigger.Conditions>
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                </MultiDataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
+                <!-- Cancel & Refund button - only visible when in cancel order flow and on summary step -->
+                <Button Content="Cancel &amp; Refund" Width="150" Height="36" Margin="0,0,10,0"
+                       Command="{Binding CancelAndRefundCommand}"
+                       IsEnabled="{Binding CanConfirmRefund}"
+                       Background="#1976D2" Foreground="White" BorderThickness="0">
+                    <Button.Style>
+                        <Style TargetType="Button" BasedOn="{StaticResource MaterialDesignRaisedButton}">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                            <Style.Triggers>
+                                <MultiDataTrigger>
+                                    <MultiDataTrigger.Conditions>
+                                        <Condition Binding="{Binding IsSummaryStep}" Value="True"/>
+                                        <Condition Binding="{Binding IsCancelOrderFlow}" Value="True"/>
+                                    </MultiDataTrigger.Conditions>
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                </MultiDataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
+                <Button Content="Cancel" Width="100" Height="36"
+                       Command="{Binding CancelCommand}"
+                       Background="#FFD10C0C" Foreground="White" BorderThickness="0"
+                       Visibility="{Binding IsSummaryStep, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+            </StackPanel>
+
+            <!-- Loading Overlay -->
+            <Border Grid.Row="0" Grid.RowSpan="4"
+                    Background="#CCFFFFFF" CornerRadius="10"
+                    Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <ProgressBar Style="{StaticResource MaterialDesignCircularProgressBar}"
+                                 IsIndeterminate="True"
+                                 Width="40" Height="40"
+                                 Value="0"/>
+                    <TextBlock Text="Processing refund..."
+                               FontSize="14" Foreground="#555"
+                               HorizontalAlignment="Center"
+                               Margin="0,12,0,0"/>
+                </StackPanel>
+            </Border>
+        </Grid>
+    </Border>
+</UserControl>

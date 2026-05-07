@@ -1,0 +1,18 @@
+{
+  "cSpell.words": [
+    "awskms",
+    "awssqs",
+    "Delivergate",
+    "shiftinfo",
+    "sqlc",
+    "unserialize",
+    "usecase",
+    "Webshop",
+    "zeroize"
+  ],
+  "[sql]": {
+    "editor.formatOnSave": false,
+    "editor.formatOnPaste": false,
+    "editor.formatOnType": false,
+  }
+}

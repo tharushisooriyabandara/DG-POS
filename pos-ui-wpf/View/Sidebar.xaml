@@ -1,0 +1,461 @@
+<UserControl x:Class="POS_UI.Sidebar"
+      x:Name="SidebarRoot"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+      xmlns:converters="clr-namespace:POS_UI.Converters"
+      xmlns:local="clr-namespace:POS_UI.View"
+      xmlns:services="clr-namespace:POS_UI.Services"
+      TextOptions.TextFormattingMode="Display"
+      TextOptions.TextRenderingMode="ClearType"
+      UseLayoutRounding="True"
+      SnapsToDevicePixels="True"
+      TextOptions.TextHintingMode="Fixed"
+      ClipToBounds="False">
+    <UserControl.Resources>
+        <converters:StringToColorConverter x:Key="StringToColorConverter"/>
+        <converters:StringToForegroundConverter x:Key="StringToForegroundConverter"/>
+        <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+        <converters:IncomingOrderBadgeDisplayConverter x:Key="IncomingOrderBadgeDisplayConverter"/>
+        
+        <!-- Modern Button Style -->
+        <Style x:Key="ModernSidebarButton" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="#666666"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border" 
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="12">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Trigger.EnterActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <ColorAnimation Storyboard.TargetName="border"
+                                                          Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
+                                                          To="#F5F5F5" Duration="0:0:0.2"/>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.EnterActions>
+                                <Trigger.ExitActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <ColorAnimation Storyboard.TargetName="border"
+                                                          Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
+                                                          To="Transparent" Duration="0:0:0.2"/>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.ExitActions>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+    
+    <!-- Drop shadow only on a narrow strip (no text) so nav stays sharp; content is drawn above in a separate layer. -->
+    <Grid Width="150"
+          Margin="0,0,-22,0"
+          ClipToBounds="False">
+        <Border Width="52"
+                HorizontalAlignment="Right"
+                Margin="0,0,-14,0"
+                VerticalAlignment="Stretch"
+                Background="#E6ECF4">
+            <Border.Effect>
+                <DropShadowEffect ShadowDepth="7"
+                                  Direction="0"
+                                  BlurRadius="18"
+                                  Opacity="0.24"
+                                  Color="Black"/>
+            </Border.Effect>
+        </Border>
+        <Border Panel.ZIndex="1"
+                Width="150"
+                HorizontalAlignment="Left"
+                VerticalAlignment="Stretch"
+                RenderOptions.BitmapScalingMode="HighQuality"
+                BorderBrush="#E2E8F0"
+                BorderThickness="0,0,1,0">
+            <Border.Background>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                    <GradientStop Color="#FFFFFF" Offset="0"/>
+                    <GradientStop Color="#F8FAFC" Offset="1"/>
+                </LinearGradientBrush>
+            </Border.Background>
+            <Grid>
+                <StackPanel Width="150">
+        <Grid Width="150" HorizontalAlignment="Stretch">
+            <Border Width="75" Height="75" 
+                    Margin="0,15,10,0"
+                    HorizontalAlignment="Center"
+                    CornerRadius="50"
+                    Background="White"
+                    BorderBrush="#1976D2"
+                    BorderThickness="3">
+                <Border.Clip>
+                    <EllipseGeometry RadiusX="37.5" RadiusY="37.5" Center="37.5,37.5"/>
+                </Border.Clip>
+                <Image Stretch="UniformToFill"
+                       Source="{Binding ShopLogo, ElementName=SidebarRoot}"
+                       RenderOptions.BitmapScalingMode="HighQuality">
+                <Image.Style>
+                    <Style TargetType="Image">
+                        <Setter Property="Visibility" Value="Visible"/>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Source, RelativeSource={RelativeSource Self}}" Value="{x:Null}">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding Source, RelativeSource={RelativeSource Self}}" Value="">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Image.Style>
+            </Image>
+             </Border>
+         </Grid>
+        <StackPanel Orientation="Horizontal" Width="125">
+            <Button  Margin="6,6" Height="52" Width="100" HorizontalContentAlignment="Center"
+                Background="{Binding CurrentPage, Converter={StaticResource StringToColorConverter}, ConverterParameter='Cashier'}" 
+                Foreground="{Binding CurrentPage, Converter={StaticResource StringToForegroundConverter}, ConverterParameter='Cashier'}"
+                Click="CashierButton_Click"
+                BorderThickness="0"
+                Cursor="Hand">
+                <Button.Style>
+                    <Style TargetType="Button">
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="Button">
+                                    <Border Background="{TemplateBinding Background}" 
+                                            BorderBrush="{TemplateBinding BorderBrush}"
+                                            BorderThickness="{TemplateBinding BorderThickness}"
+                                            CornerRadius="12">
+                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                </Button.Style>
+                <Grid>
+                    <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <materialDesign:PackIcon Kind="CashRegister" Width="22" Height="22" HorizontalAlignment="Center" Margin="0,0,0,2"/>
+                        <TextBlock Text="Cashier" 
+                                   HorizontalAlignment="Center" 
+                                   FontSize="13" 
+                                   FontWeight="Bold"/>
+                    </StackPanel>
+                </Grid>
+            </Button>
+            <!-- Notification Badge as Button -->
+            <Button Background="#FF5A5F" BorderBrush="Transparent" Width="26" Height="22" Margin="-25,-35,0,0" 
+                    Command="{Binding ShowOrderAlertCommand}"
+                    IsEnabled="{Binding IncomingOrdersCount, ElementName=SidebarRoot, Converter={StaticResource NumberToBooleanConverter}}">
+                <Button.Resources>
+                    <Style TargetType="Button">
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="Button">
+                                    <Border Background="{TemplateBinding Background}" CornerRadius="12.5">
+                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                </Button.Resources>
+                <TextBlock Text="{Binding IncomingOrdersCount, ElementName=SidebarRoot, Converter={StaticResource IncomingOrderBadgeDisplayConverter}}"
+                        Foreground="White" 
+                        FontWeight="Bold" 
+                        FontSize="14" 
+                        HorizontalAlignment="Center" 
+                        VerticalAlignment="Center"/>
+            </Button>
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" Width="125">
+            <Button Margin="6,6" Height="52" Width="100" HorizontalContentAlignment="Center"
+                Background="{Binding CurrentPage, Converter={StaticResource StringToColorConverter}, ConverterParameter='Tables'}" 
+                Foreground="{Binding CurrentPage, Converter={StaticResource StringToForegroundConverter}, ConverterParameter='Tables'}"
+                Click="TablesButton_Click"
+                BorderThickness="0"
+                Cursor="Hand">
+                <Button.Style>
+                    <Style TargetType="Button">
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="Button">
+                                    <Border Background="{TemplateBinding Background}" 
+                                            CornerRadius="12">
+                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                </Button.Style>
+                <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <materialDesign:PackIcon Kind="TableFurniture" Width="22" Height="22" HorizontalAlignment="Center" Margin="0,0,0,2"/>
+                    <TextBlock Text="Tables" 
+                               HorizontalAlignment="Center" 
+                               FontSize="13" 
+                               FontWeight="Bold"/>
+                </StackPanel>
+            </Button>
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" Width="125"
+                    Visibility="{Binding ShowOrdersButton, Converter={StaticResource BooleanToVisibilityConverter}, ElementName=SidebarRoot}">
+            <Button Margin="6,6" Height="52" Width="100" HorizontalContentAlignment="Center" 
+                Background="{Binding CurrentPage, Converter={StaticResource StringToColorConverter}, ConverterParameter='Kitchen'}" 
+                Foreground="{Binding CurrentPage, Converter={StaticResource StringToForegroundConverter}, ConverterParameter='Kitchen'}"
+                Click="KitchenButton_Click"
+                BorderThickness="0"
+                Cursor="Hand">
+                <Button.Style>
+                    <Style TargetType="Button">
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="Button">
+                                    <Border Background="{TemplateBinding Background}" CornerRadius="12">
+                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                </Button.Style>
+            <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
+                <materialDesign:PackIcon Kind="Food" Width="22" Height="22" HorizontalAlignment="Center" Margin="0,0,0,2"/>
+                <TextBlock Text="Orders" 
+                           HorizontalAlignment="Center" 
+                           FontSize="13" 
+                           FontWeight="Bold"/>
+            </StackPanel>
+        </Button>
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" Width="125"
+                    Visibility="{Binding ShowLiveOrdersButton, Converter={StaticResource BooleanToVisibilityConverter}, ElementName=SidebarRoot}">
+            <Button Margin="6,6" Height="52" Width="100" HorizontalContentAlignment="Center" 
+                Background="{Binding CurrentPage, Converter={StaticResource StringToColorConverter}, ConverterParameter='LiveOrders'}" 
+                Foreground="{Binding CurrentPage, Converter={StaticResource StringToForegroundConverter}, ConverterParameter='LiveOrders'}"
+                Click="LiveOrdersButton_Click"
+                BorderThickness="0"
+                Cursor="Hand">
+                <Button.Style>
+                    <Style TargetType="Button">
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="Button">
+                                    <Border Background="{TemplateBinding Background}" CornerRadius="12">
+                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                </Button.Style>
+            <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
+                <materialDesign:PackIcon Kind="Food" Width="22" Height="22" HorizontalAlignment="Center" Margin="0,0,0,2"/>
+                <TextBlock Text="Live Orders" 
+                           HorizontalAlignment="Center" 
+                           FontSize="13" 
+                           FontWeight="Bold"/>
+            </StackPanel>
+        </Button>
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" Width="125">
+            <Button Margin="6,6" Height="52" Width="100" HorizontalContentAlignment="Center" 
+                Background="{Binding CurrentPage, Converter={StaticResource StringToColorConverter}, ConverterParameter='History'}" 
+                Foreground="{Binding CurrentPage, Converter={StaticResource StringToForegroundConverter}, ConverterParameter='History'}"
+                Click="HistoryButton_Click"
+                BorderThickness="0"
+                Cursor="Hand">
+                <Button.Style>
+                    <Style TargetType="Button">
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="Button">
+                                    <Border Background="{TemplateBinding Background}" CornerRadius="12">
+                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                </Button.Style>
+
+            <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
+                <materialDesign:PackIcon Kind="Package" Width="22" Height="22" HorizontalAlignment="Center" Margin="0,0,0,2"/>
+                <TextBlock Text="History" 
+                           HorizontalAlignment="Center" 
+                           FontSize="13" 
+                           FontWeight="Bold"/>
+            </StackPanel>
+        </Button>
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" Width="125">
+        <Button Margin="6,6" Height="52" Width="100" HorizontalContentAlignment="Center" 
+                Background="{Binding CurrentPage, Converter={StaticResource StringToColorConverter}, ConverterParameter='Customer'}" 
+                Foreground="{Binding CurrentPage, Converter={StaticResource StringToForegroundConverter}, ConverterParameter='Customer'}"
+                Click="CustomerButton_Click"
+                BorderThickness="0"
+                Cursor="Hand">
+                <Button.Style>
+                    <Style TargetType="Button">
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="Button">
+                                    <Border Background="{TemplateBinding Background}" CornerRadius="12">
+                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                </Button.Style>
+            <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
+                <materialDesign:PackIcon Kind="Account" Width="22" Height="22" HorizontalAlignment="Center" Margin="0,0,0,2"/>
+                <TextBlock Text="Customers" 
+                           HorizontalAlignment="Center" 
+                           FontSize="13" 
+                           FontWeight="Bold"/>
+            </StackPanel>
+        </Button>
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" Width="125" Visibility="{Binding IsOutletAdmin, ElementName=SidebarRoot, Converter={StaticResource BooleanToVisibilityConverter}}">
+        <Button Margin="6,6" Height="52" Width="100" HorizontalContentAlignment="Center" 
+                Background="{Binding CurrentPage, Converter={StaticResource StringToColorConverter}, ConverterParameter='Reports'}" 
+
+                Foreground="{Binding CurrentPage, Converter={StaticResource StringToForegroundConverter}, ConverterParameter='Reports'}"
+                Click="ReportsButton_Click"
+                BorderThickness="0"
+                Cursor="Hand">
+                <Button.Style>
+                    <Style TargetType="Button">
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="Button">
+                                    <Border Background="{TemplateBinding Background}" CornerRadius="12">
+                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                </Button.Style>
+
+            <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
+                <materialDesign:PackIcon Kind="ChartBar" Width="22" Height="22" HorizontalAlignment="Center" Margin="0,0,0,2"/>
+                <TextBlock Text="Reports" 
+                           HorizontalAlignment="Center" 
+                           FontSize="13" 
+                           FontWeight="Bold"/>
+            </StackPanel>
+        </Button>
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" Width="125">
+            <Button Margin="6,6" Height="52" Width="100" HorizontalContentAlignment="Center" 
+                Background="{Binding CurrentPage, Converter={StaticResource StringToColorConverter}, ConverterParameter='Settings'}" 
+                Foreground="{Binding CurrentPage, Converter={StaticResource StringToForegroundConverter}, ConverterParameter='Settings'}"
+                Click="SettingsButton_Click"
+                BorderThickness="0"
+                Cursor="Hand">
+                <Button.Style>
+                    <Style TargetType="Button">
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="Button">
+                                    <Border Background="{TemplateBinding Background}" CornerRadius="12">
+                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                </Button.Style>
+            <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
+                <materialDesign:PackIcon Kind="Cog" Width="22" Height="22" HorizontalAlignment="Center" Margin="0,0,0,2"/>
+                <TextBlock Text="Settings" 
+                           HorizontalAlignment="Center" 
+                           FontSize="13" 
+                           FontWeight="Bold"/>
+            </StackPanel>
+        </Button>
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" Width="125">
+        <TextBlock Text="{Binding CurrentTime, ElementName=SidebarRoot}" 
+                   Margin="10,20,10,0" 
+                   FontWeight="Bold" 
+                   FontSize="20" 
+                   TextAlignment="Center"
+                   Foreground="#333333"/>
+        </StackPanel>
+
+        <StackPanel Orientation="Horizontal" Width="125">
+            <Button Margin="6,6" Height="52" Width="100" HorizontalContentAlignment="Center" 
+                Background="Black" 
+                Foreground="White" 
+                Click="LogoutButton_Click" 
+                BorderThickness="0"
+                Cursor="Hand">
+                <Button.Style>
+                    <Style TargetType="Button">
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="Button">
+                                    <Border Background="{TemplateBinding Background}" CornerRadius="12">
+                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                </Button.Style>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                <materialDesign:PackIcon Kind="Lock" Width="20" Height="20" HorizontalAlignment="Center" Margin="0,0,4,0"/>
+                <TextBlock Text="Lock" 
+                           HorizontalAlignment="Center" 
+                           FontSize="14" 
+                           FontWeight="Bold"/>
+            </StackPanel>
+        </Button>
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" Width="125">
+            <TextBlock Text="{Binding NetworkSpeed, ElementName=SidebarRoot}" 
+                       HorizontalAlignment="Center" 
+                       VerticalAlignment="Center"
+                       FontSize="12" 
+                       FontWeight="Bold"
+                       Foreground="#666666"
+                       TextAlignment="Center"
+                       Width="100"
+                       Margin="6,2,0,5"/>
+        </StackPanel>
+    </StackPanel>
+                <Border HorizontalAlignment="Right"
+                        Width="16"
+                        VerticalAlignment="Stretch"
+                        Panel.ZIndex="1"
+                        IsHitTestVisible="False">
+                    <Border.Background>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                            <GradientStop Color="#10000000" Offset="0"/>
+                            <GradientStop Color="#00000000" Offset="1"/>
+                        </LinearGradientBrush>
+                    </Border.Background>
+                </Border>
+            </Grid>
+        </Border>
+    </Grid>
+
+</UserControl> 

@@ -1,0 +1,41 @@
+﻿<Page x:Class="POS_UI.View.AdminHomePage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+       xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+      xmlns:local="clr-namespace:POS_UI.View"
+      mc:Ignorable="d" 
+      d:DesignHeight="450" d:DesignWidth="800"
+      Title="AdminHomePage">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <materialDesign:ColorZone Mode="PrimaryMid" Padding="16" materialDesign:ShadowAssist.ShadowDepth="Depth2">
+            <DockPanel>
+                <TextBlock Text="Admin Dashboard" 
+                         VerticalAlignment="Center" 
+                         FontSize="20" 
+                         FontWeight="Bold"/>
+                <Button Content="Logout" 
+                        HorizontalAlignment="Right"
+                        Style="{StaticResource MaterialDesignRaisedButton}"
+                        Click="LogoutButton_Click"/>
+            </DockPanel>
+        </materialDesign:ColorZone>
+
+        <!-- Main Content -->
+        <Grid Grid.Row="1" Margin="16">
+
+            <TextBlock Text="Welcome to Admin Dashboard" 
+                     FontSize="24" 
+                     HorizontalAlignment="Center" 
+                     VerticalAlignment="Center"/>
+        </Grid>
+    </Grid>
+</Page>

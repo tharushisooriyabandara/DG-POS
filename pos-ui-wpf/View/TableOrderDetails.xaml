@@ -1,0 +1,180 @@
+<UserControl x:Class="POS_UI.View.TableOrderDetails"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:POS_UI.View"
+             xmlns:models="clr-namespace:POS_UI.Models"
+              xmlns:vm="clr-namespace:POS_UI.ViewModels"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             x:Name="OrderDetailsRoot"
+             xmlns:converters="clr-namespace:POS_UI.Converters"
+             xmlns:controls="clr-namespace:POS_UI.View.Controls"
+             Width="380" MinHeight="600" Background="White">
+    <UserControl.Resources>
+        <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+        <converters:StringToVisibilityConverter x:Key="StringToVisibilityConverter"/>
+        <converters:StripStatusTagConverter x:Key="StripStatusTagConverter"/>
+    </UserControl.Resources>
+    <Border Padding="10" Background="White" CornerRadius="10" BorderBrush="#EEE" BorderThickness="1">
+        <Grid>
+            <!-- Loading State -->
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" 
+                        Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <controls:LoadingIndicator ProgressRingSize="40"/>
+                <TextBlock Text="Loading order details..." Margin="0,10,0,0" 
+                           FontSize="16" Foreground="Gray" HorizontalAlignment="Center"/>
+            </StackPanel>
+            
+            <!-- Content -->
+            <Grid Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter=Invert}">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                
+                <!-- Header -->
+                <Grid Grid.Row="0" Margin="0,0,0,10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Top" Grid.Column="0">
+                        <StackPanel Height="52">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="Order #" FontWeight="Bold" FontSize="22"/>
+                                <TextBlock Text="{Binding OrderNumber}" FontWeight="Bold" FontSize="22" Margin="4,0,0,0"/>
+                            </StackPanel>
+                            <TextBlock Text="{Binding CustomerName, TargetNullValue='Customer Name'}"
+                                       FontWeight="SemiBold" FontSize="16" Margin="0,0,0,10"/>
+                        </StackPanel>
+                        <Button Style="{StaticResource MaterialDesignOutlinedButton}"
+                                Margin="20,0,0,0" Padding="10,6"
+                                Command="{Binding PrintCommand}" Background="#FFF3E0" Foreground="Black" BorderBrush="Black" Height="36">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <materialDesign:PackIcon Kind="Printer" Width="20" Height="20" Margin="0,0,5,0"/>
+                                <TextBlock Text="Print" VerticalAlignment="Center" FontWeight="Bold"/>
+                            </StackPanel>
+                        </Button>
+                        <Button Style="{StaticResource MaterialDesignOutlinedButton}"
+                                Margin="10,0,0,0" Padding="10,6"
+                                Background="#F8FAF9" BorderBrush="Black" Foreground="Black"
+                                Height="36" VerticalAlignment="Center" IsHitTestVisible="False">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <materialDesign:PackIcon Kind="RoomServiceOutline" Width="22" Height="22" Margin="0,0,5,0"/>
+                                <TextBlock Text="{Binding TableNumber}" FontSize="16" FontWeight="Bold" Foreground="Black" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+
+                    <Button Width="32" Height="32" VerticalAlignment="Center" HorizontalAlignment="Right"
+                            Command="{x:Static materialDesign:DialogHost.CloseDialogCommand}"
+                            ToolTip="Close" Style="{StaticResource MaterialDesignToolButton}" Background="Transparent"
+                            BorderBrush="Transparent" Grid.Column="1">
+                        <materialDesign:PackIcon Kind="Close" Width="32" Height="24" VerticalAlignment="Center" RenderTransformOrigin="0.515,1.014"/>
+                    </Button>
+                </Grid>
+
+                <!-- Order Type Button -->
+                <Button Grid.Row="1" Content="{Binding OrderType}" Background="#2196F3" Foreground="White"
+                        FontWeight="Bold" Margin="0,0,0,10" Padding="12,6" BorderThickness="0"
+                        FontSize="18" Height="40" />
+
+                <!-- Order Items List (fills remaining space) -->
+                <Grid Grid.Row="2">
+                    <ScrollViewer x:Name="OrderItemsScrollViewer"
+                                  VerticalScrollBarVisibility="Hidden" PanningMode="None"
+                                  Margin="0,8,0,0">
+                        <ItemsControl ItemsSource="{Binding Order.Items}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,0" VerticalAlignment="Center">
+                                        <StackPanel Width="120">
+                                            <TextBlock Text="{Binding Name, Converter={StaticResource StripStatusTagConverter}}" FontWeight="Bold" FontSize="15"/>
+                                            <TextBlock Text="{Binding Product.Size}" FontSize="12" Foreground="Gray"/>
+                                        </StackPanel>
+                                        <StackPanel Orientation="Horizontal" Margin="20,0,0,0">
+                                            <Button Content="-" Width="43" Height="30" FontSize="14" Foreground="Black" Background="#F7F7F7" BorderBrush="#F7F7F7"/>
+                                            <TextBlock Text="{Binding Quantity}" VerticalAlignment="Center" FontWeight="Bold" Width="24" TextAlignment="Center" FontSize="16"/>
+                                            <Button Content="+" Width="43" Height="30" FontSize="14" Foreground="Black" Background="#F7F7F7" BorderBrush="#F7F7F7"/>
+                                        </StackPanel>
+                                        <TextBlock Text="{Binding Total, Converter={StaticResource CurrencyFormatConverter}}" FontWeight="Bold" FontSize="15" Margin="20,0,0,0" Width="60"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                    <Border x:Name="ItemsFadeOverlay" VerticalAlignment="Bottom" Height="60" IsHitTestVisible="False" Opacity="0">
+                        <Border.Background>
+                            <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                <GradientStop Color="#00FFFFFF" Offset="0"/>
+                                <GradientStop Color="#FFFFFFFF" Offset="1"/>
+                            </LinearGradientBrush>
+                        </Border.Background>
+                    </Border>
+                </Grid>
+                
+                <!-- Bottom Section (Note/Coupon Buttons, Totals, Action Buttons) -->
+                <StackPanel Grid.Row="3" VerticalAlignment="Bottom">
+                    <!-- Note and Coupon Buttons -->
+                    <StackPanel Orientation="Horizontal" Margin="3,8,0,8" HorizontalAlignment="Center">
+                        <Button Content="Note" Width="109" Height="30" Margin="0,0,8,0" Background="#FFF3E0" 
+                            Foreground="#222" BorderBrush="Transparent"/>
+                        <Button Content="Coupon" Width="109" Height="30" Margin="0,0,8,0" Background="#FFF3E0" 
+                            Foreground="#222"  BorderBrush="Transparent" />
+                        <Button Content="Discount" Width="109" Height="30" Background="#FFF3E0" 
+                             Foreground="#222" BorderBrush="Transparent"/>
+                    </StackPanel>
+
+                    <!-- Totals Section -->
+                    <Border Margin="0,10,0,0" Padding="0,12" Background="#EEEEEE" CornerRadius="8">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="2*"/>
+                                <ColumnDefinition Width="1*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <!-- Total -->
+                            <TextBlock Grid.Row="0" Grid.Column="0" Text="Total" FontWeight="SemiBold" FontSize="15" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding Total, Converter={StaticResource CurrencyFormatConverter}}" FontWeight="SemiBold" FontSize="15" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+
+                            <!-- Coupon Row -->
+                            <!--<StackPanel Grid.Row="1" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Right" Visibility="{Binding HasCoupon, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                <TextBlock Text="{Binding CouponCode}" Foreground="#1976D2" FontWeight="Bold" VerticalAlignment="Center" Margin="0,0,8,0" Width="309"/>
+                                <Button Command="{Binding RemoveCouponCommand}" Width="20" Height="20" Margin="0,0,8,0" Background="Transparent" BorderBrush="Transparent" ToolTip="Remove Coupon" Style="{x:Null}">
+                                    <materialDesign:PackIcon Kind="Close" Width="16" Height="16" Foreground="Red"/>
+                                </Button>
+                                <TextBlock Text="{Binding CouponDiscount, StringFormat=-{0:C}}" Foreground="#1976D2" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                            </StackPanel>-->
+
+                            <!-- Discount Row -->
+                                <TextBlock Grid.Row="2" Grid.Column="0" Text="{Binding DiscountDescription}" Foreground="Red" FontWeight="SemiBold" FontSize="15" VerticalAlignment="Center"
+                                           Visibility="{Binding HasDiscount, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                                <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding Discount, StringFormat='${0:F2}'}" Foreground="Red" FontWeight="SemiBold" FontSize="15" HorizontalAlignment="Right" VerticalAlignment="Center"
+                                           Visibility="{Binding HasDiscount, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+
+                                <!-- Subtotal -->
+                            <TextBlock Grid.Row="3" Grid.Column="0" Text="Sub Total" FontWeight="Bold" FontSize="18" VerticalAlignment="Center" Margin="0,8,0,0"/>
+                            <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding SubTotal, Converter={StaticResource CurrencyFormatConverter}}" FontWeight="Bold" FontSize="18" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,8,0,0"/>
+                        </Grid>
+                    </Border>
+
+                    <!-- Action Buttons -->
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,20,0,0">
+                        <Button Content="Finish Order" Background="#FF5722" BorderBrush="Transparent" Foreground="White" FontWeight="Bold" Padding="20,5" Margin="0,0,10,0"/>
+                        <Button Content="Update Order"
+                            Command="{Binding UpdateOrderCommand}"
+                            Background="#2196F3" Foreground="White" FontWeight="Bold" Padding="20,5"/>
+                    </StackPanel>
+                </StackPanel>
+            </Grid>
+        </Grid>
+    </Border>
+</UserControl> 

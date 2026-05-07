@@ -1,0 +1,712 @@
+<UserControl xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             xmlns:converters="clr-namespace:POS_UI.Converters"
+             xmlns:controls="clr-namespace:POS_UI.View.Controls"
+             x:Class="POS_UI.View.CashSessionDetailsDialog"
+             x:Name="CashSessionDialog"
+             MinWidth="500"
+             MaxWidth="600"
+             MinHeight="400"
+             MaxHeight="700">
+
+    <UserControl.Resources>
+        <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+        <converters:InvertBooleanToVisibilityConverter x:Key="InvertBooleanToVisibilityConverter"/>
+        <converters:CurrencyFormatConverter x:Key="CurrencyFormatConverter"/>
+        <converters:DateTimeFormatConverter x:Key="DateTimeFormatConverter"/>
+        <converters:CountryBasedDateTimeConverter x:Key="CountryBasedDateTimeConverter"/>
+        <converters:StringToColorConverter x:Key="StringToColorConverter"/>
+    </UserControl.Resources>
+
+    <Grid>
+        <Border Background="White" 
+                CornerRadius="8" 
+                Padding="20,10,20,10" 
+                MinWidth="500" 
+                MaxWidth="600"
+                BorderBrush="#CCCCCC"
+                BorderThickness="1">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <!-- Header with Print button on right -->
+                <Grid Grid.Row="0" Margin="0,0,0,20">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0" Margin="35,0,0,0">
+                        <TextBlock Text="Shift Details" 
+                                   FontSize="20" 
+                                   FontWeight="Bold" 
+                                   Foreground="#1976D2" 
+                                   HorizontalAlignment="Center"/>
+                        <TextBlock Text="{Binding Session.Id, StringFormat='Shift ID: {0}'}" 
+                                   FontSize="16" 
+                                   FontWeight="SemiBold" 
+                                   Foreground="#666" 
+                                   HorizontalAlignment="Center" 
+                                   Margin="0,5,0,0"/>
+                    </StackPanel>
+                    <Button Grid.Column="1"
+                            Width="40" Height="36"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Top"
+                            ToolTip="Print Shift"
+                            Command="{Binding PrintSessionCommand}"
+                            Style="{StaticResource MaterialDesignToolButton}">
+                        <materialDesign:PackIcon Kind="Printer" Width="30" Height="30"/>
+                    </Button>
+                </Grid>
+
+                <!-- Session Status Badge -->
+                <Border Grid.Row="1" 
+                        Background="#FFE90606" 
+                        CornerRadius="15" 
+                        Padding="15,6" 
+                        HorizontalAlignment="Center" 
+                        Margin="0,0,0,0">
+                    <TextBlock Text="{Binding Session.Status}" 
+                               FontWeight="SemiBold" 
+                               Foreground="White" 
+                               FontSize="13"/>
+                </Border>
+
+                <!-- Z-Report Content (Same structure as printed receipt) -->
+                <ScrollViewer x:Name="ReportScrollViewer" Grid.Row="2" VerticalScrollBarVisibility="Auto" MaxHeight="410" PanningMode="None">
+                    <StackPanel Margin="0,10,0,0">
+                        
+                        <!-- Header Info (Session specific) -->
+                        <Grid Margin="0,0,0,8">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="150"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="Outlet Name:" FontWeight="SemiBold" FontSize="13"/>
+                            <TextBlock Grid.Column="1" Text="{Binding OutletName}" FontSize="13"/>
+                        </Grid>
+                        <Grid Margin="0,0,0,8">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="150"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="Started By User:" FontWeight="SemiBold" FontSize="13"/>
+                            <TextBlock Grid.Column="1" Text="{Binding Session.SessionStartedUser}" FontSize="13"/>
+                        </Grid>
+                        <Grid Margin="0,0,0,8">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="150"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="Ended By User:" FontWeight="SemiBold" FontSize="13"/>
+                            <TextBlock Grid.Column="1" Text="{Binding Session.SessionEndedUser}" FontSize="13">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Text" Value="N/A"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Session.SessionEndedUserId}" Value="{x:Null}">
+                                                <Setter Property="Text" Value="N/A"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </Grid>
+                        <Grid Margin="0,0,0,8">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="150"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="Opened At:" FontWeight="SemiBold" FontSize="13"/>
+                            <TextBlock Grid.Column="1" Text="{Binding Session.OpenedAt, Converter={StaticResource CountryBasedDateTimeConverter}}" FontSize="13"/>
+                        </Grid>
+                        <Grid Margin="0,0,0,8">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="150"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="Closed At:" FontWeight="SemiBold" FontSize="13"/>
+                            <TextBlock Grid.Column="1" Text="{Binding Session.ClosedAt, Converter={StaticResource CountryBasedDateTimeConverter}}" FontSize="13">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Text" Value="Not Closed"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Session.ClosedAt}" Value="{x:Null}">
+                                                <Setter Property="Text" Value="Not Closed"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </Grid>
+
+                        <Separator Margin="0,10" Background="#CCCCCC"/>
+                                
+                                <!-- Loading Indicator -->
+                                <TextBlock Text="Loading Z-Report data..." 
+                                           FontSize="12" 
+                                           Foreground="#666"
+                                           Visibility="{Binding IsLoadingZReportStats, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                           Margin="0,0,0,10"/>
+
+                                <!-- No Data Message -->
+                                <TextBlock Text="Z-Report data not available for this shift." 
+                                           FontSize="12" 
+                                           Foreground="#999"
+                                           Margin="0,0,0,10"
+                                           Visibility="{Binding ShowNoZReportData, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+
+                        <!-- Z-Report Sections -->
+                        <StackPanel Visibility="{Binding HasZReportStats, Converter={StaticResource BooleanToVisibilityConverter}}">
+
+                                <!-- Sales Breakdown -->
+                            <TextBlock Text="Gross Sales Breakdown" FontWeight="Bold" FontSize="14" Margin="0,10,0,5"/>
+                            <Border BorderBrush="#EEEEEE" BorderThickness="0,0,0,1" Margin="0,0,0,5"/>
+                            <Grid Margin="0,2">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="230"/>
+                                                <ColumnDefinition Width="70"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="Takeaway Orders (POS)" FontSize="13"/>
+                                <TextBlock Grid.Column="1" Text="{Binding ZReportStats.TakeawayOrderCount}" FontSize="13" FontWeight="SemiBold" Margin="10,0"/>
+                                <TextBlock Grid.Column="2" Text="{Binding ZReportStats.TakeawayRevenue, Converter={StaticResource CurrencyFormatConverter}}" TextAlignment="Right" FontSize="13" FontWeight="SemiBold" Margin="10,0"/>
+                                        </Grid>
+                            <Grid Margin="0,2">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="230"/>
+                                                <ColumnDefinition Width="70"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="Dine-In Orders (POS)" FontSize="13"/>
+                                <TextBlock Grid.Column="1" Text="{Binding ZReportStats.DineInOrderCount}" FontSize="13" FontWeight="SemiBold" Margin="10,0"/>
+                                <TextBlock Grid.Column="2" Text="{Binding ZReportStats.DineInRevenue, Converter={StaticResource CurrencyFormatConverter}}" TextAlignment="Right" FontSize="13" FontWeight="SemiBold" Margin="10,0"/>
+                                        </Grid>
+                             <Grid Margin="0,2">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="230"/>
+                                                <ColumnDefinition Width="70"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="Delivery Orders (POS)" FontSize="13"/>
+                                <TextBlock Grid.Column="1" Text="{Binding ZReportStats.PosDeliveryOrderCount}" FontSize="13" FontWeight="SemiBold" Margin="10,0"/>
+                                <TextBlock Grid.Column="2" Text="{Binding ZReportStats.PosDeliveryRevenue, Converter={StaticResource CurrencyFormatConverter}}" TextAlignment="Right" FontSize="13" FontWeight="SemiBold" Margin="10,0"/>
+                                        </Grid>
+                            <ItemsControl ItemsSource="{Binding FilteredPlatformStats}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid Margin="0,2">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="230"/>
+                                                <ColumnDefinition Width="70"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Grid.Column="0" Text="{Binding PlatformName}" FontSize="13"/>
+                                            <TextBlock Grid.Column="1" Text="{Binding TotalOrders}" FontSize="13" FontWeight="SemiBold" Margin="10,0"/>
+                                            <TextBlock Grid.Column="2" Text="{Binding TotalRevenue, Converter={StaticResource CurrencyFormatConverter}}" TextAlignment="Right" FontSize="13" FontWeight="SemiBold" Margin="10,0"/>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                            <Grid Margin="0,8,0,2">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="230"/>
+                                                <ColumnDefinition Width="70"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="Total Gross Sales" FontSize="13" FontWeight="Bold"/>
+                                <TextBlock Grid.Column="1" Text="{Binding ZReportStats.TotalOrderCount}" FontSize="13" FontWeight="Bold" Margin="10,0"/>
+                                <TextBlock Grid.Column="2" Text="{Binding ZReportStats.TotalRevenue, Converter={StaticResource CurrencyFormatConverter}}" TextAlignment="Right" FontSize="13" FontWeight="Bold" Margin="10,0"/>
+                                        </Grid>
+
+                                <!-- Tender Summary -->
+                            <TextBlock Text="Tender Summary" FontWeight="Bold" FontSize="14" Margin="0,15,0,5"/>
+                            <Border BorderBrush="#EEEEEE" BorderThickness="0,0,0,1" Margin="0,0,0,5"/>
+                            <!-- Cash Sales Subheading -->
+                            <TextBlock Text="Cash Sales" FontWeight="SemiBold" FontSize="12" Margin="0,5,0,2" Foreground="#666"/>
+                             <Grid Margin="0,2">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="230"/>
+                                                <ColumnDefinition Width="70"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="-POS" FontSize="13"/>
+                                <TextBlock Grid.Column="1" Text="{Binding ZReportStats.PosCashOrderCount}" FontSize="13" FontWeight="SemiBold" Margin="10,0"/>
+                                <TextBlock Grid.Column="2" Text="{Binding ZReportStats.PosCashSales, Converter={StaticResource CurrencyFormatConverter}}" TextAlignment="Right" FontSize="13" FontWeight="SemiBold" Margin="10,0"/>
+                                        </Grid>
+                            <ItemsControl ItemsSource="{Binding FilteredPlatformCashStats}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid Margin="0,2">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="230"/>
+                                                <ColumnDefinition Width="70"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Grid.Column="0" Text="{Binding PlatformName, StringFormat=-{0}}" FontSize="13"/>
+                                            <TextBlock Grid.Column="1" Text="{Binding CashOrderCount}" FontSize="13" FontWeight="SemiBold" Margin="10,0"/>
+                                            <TextBlock Grid.Column="2" Text="{Binding CashRevenue, Converter={StaticResource CurrencyFormatConverter}}" TextAlignment="Right" FontSize="13" FontWeight="SemiBold" Margin="10,0"/>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                            <!-- Card Sales Subheading -->
+                            <TextBlock Text="Card Sales (Online)" FontWeight="SemiBold" FontSize="12" Margin="0,5,0,2" Foreground="#666" Visibility="{Binding HasCardSales, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                            <ItemsControl ItemsSource="{Binding FilteredPlatformCardStats}" Visibility="{Binding HasCardSales, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid Margin="0,2">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="230"/>
+                                                <ColumnDefinition Width="70"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Grid.Column="0" Text="{Binding PlatformName, StringFormat=-{0}}" FontSize="13"/>
+                                            <TextBlock Grid.Column="1" Text="{Binding CardOnlineOrderCount}" FontSize="13" FontWeight="SemiBold" Margin="10,0"/>
+                                            <TextBlock Grid.Column="2" Text="{Binding CardOnlineRevenue, Converter={StaticResource CurrencyFormatConverter}}" TextAlignment="Right" FontSize="13" FontWeight="SemiBold" Margin="10,0"/>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                             <Grid Margin="0,2">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="230"/>
+                                                <ColumnDefinition Width="70"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="Card (Machine-POS)" FontSize="13"/>
+                                <TextBlock Grid.Column="1" Text="{Binding ZReportStats.CardMachineOrderCount}" FontSize="13" FontWeight="SemiBold" Margin="10,0"/>
+                                <TextBlock Grid.Column="2" Text="{Binding ZReportStats.CardMachineSales, Converter={StaticResource CurrencyFormatConverter}}" TextAlignment="Right" FontSize="13" FontWeight="SemiBold" Margin="10,0"/>
+                                        </Grid>
+                            <Grid Margin="0,8,0,2">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="230"/>
+                                                <ColumnDefinition Width="70"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="Total Tenders" FontSize="13" FontWeight="Bold"/>
+                                <TextBlock Grid.Column="1" Text="{Binding ZReportStats.TotalTenderOrderCount}" FontSize="13" FontWeight="Bold" Margin="10,0"/>
+                                <TextBlock Grid.Column="2" Text="{Binding ZReportStats.TotalTenderSales, Converter={StaticResource CurrencyFormatConverter}}" TextAlignment="Right" FontSize="13" FontWeight="Bold" Margin="10,0"/>
+                                        </Grid>
+
+                                <!-- Refund Summary (mirrors printed Z report: Cash refunds / Card refunds with POS and platform rows) -->
+                            <TextBlock Text="Refund Summary" FontWeight="Bold" FontSize="14" Margin="0,15,0,5"/>
+                            <Border BorderBrush="#EEEEEE" BorderThickness="0,0,0,1" Margin="0,0,0,5"/>
+                            <!-- Cash refunds subheading -->
+                            <TextBlock Text="Cash refunds" FontWeight="SemiBold" FontSize="12" Margin="0,5,0,2" Foreground="#666"/>
+                            <Grid Margin="0,2">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="230"/>
+                                    <ColumnDefinition Width="70"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="-POS" FontSize="13"/>
+                                <!--<TextBlock Grid.Column="2" Text="{Binding ZReportStats.PosCashRefund, Converter={StaticResource CurrencyFormatConverter}}" TextAlignment="Right" FontSize="13" FontWeight="SemiBold" Margin="10,0"/>-->
+                            </Grid>
+                            <Grid Margin="0,2">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="230"/>
+                                    <ColumnDefinition Width="70"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="  -Cash Sale Cash refund" FontSize="13"/>
+                                <TextBlock Grid.Column="2" Text="{Binding ZReportStats.PosCashSaleCashRefund, Converter={StaticResource CurrencyFormatConverter}}" TextAlignment="Right" FontSize="13" FontWeight="SemiBold" Margin="10,0"/>
+                            </Grid>
+                            <Grid Margin="0,2">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="230"/>
+                                    <ColumnDefinition Width="70"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="  -Card Sale Cash refund" FontSize="13"/>
+                                <TextBlock Grid.Column="2" Text="{Binding ZReportStats.PosCardSaleCashRefund, Converter={StaticResource CurrencyFormatConverter}}" TextAlignment="Right" FontSize="13" FontWeight="SemiBold" Margin="10,0"/>
+                            </Grid>
+                            <ItemsControl ItemsSource="{Binding FilteredPlatformCashRefundStats}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Margin="0,2">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="230"/>
+                                                    <ColumnDefinition Width="70"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Grid.Column="0" Text="{Binding PlatformName, StringFormat=-{0}}" FontSize="13"/>
+                                                <!--<TextBlock Grid.Column="2" Text="{Binding CashRefund, Converter={StaticResource CurrencyFormatConverter}}" TextAlignment="Right" FontSize="13" FontWeight="SemiBold" Margin="10,0"/>-->
+                                            </Grid>
+                                            <Grid Margin="0,2">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="230"/>
+                                                    <ColumnDefinition Width="70"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Grid.Column="0" Text="  -Cash Sale Cash refund" FontSize="13"/>
+                                                <TextBlock Grid.Column="2" Text="{Binding CashSaleCashRefund, Converter={StaticResource CurrencyFormatConverter}}" TextAlignment="Right" FontSize="13" FontWeight="SemiBold" Margin="10,0"/>
+                                            </Grid>
+                                            <Grid Margin="0,2">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="230"/>
+                                                    <ColumnDefinition Width="70"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Grid.Column="0" Text="  -Card Sale Cash refund" FontSize="13"/>
+                                                <TextBlock Grid.Column="2" Text="{Binding CardSaleCashRefund, Converter={StaticResource CurrencyFormatConverter}}" TextAlignment="Right" FontSize="13" FontWeight="SemiBold" Margin="10,0"/>
+                                            </Grid>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                            <!-- Card refunds subheading -->
+                            <TextBlock Text="Card refunds" FontWeight="SemiBold" FontSize="12" Margin="0,5,0,2" Foreground="#666"/>
+                            <Grid Margin="0,2">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="230"/>
+                                    <ColumnDefinition Width="70"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="-POS" FontSize="13"/>
+                                <TextBlock Grid.Column="2" Text="{Binding ZReportStats.PosCardRefund, Converter={StaticResource CurrencyFormatConverter}}" TextAlignment="Right" FontSize="13" FontWeight="SemiBold" Margin="10,0"/>
+                            </Grid>
+                            <ItemsControl ItemsSource="{Binding FilteredPlatformCardRefundStats}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid Margin="0,2">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="230"/>
+                                                <ColumnDefinition Width="70"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Grid.Column="0" Text="{Binding PlatformName, StringFormat=-{0}}" FontSize="13"/>
+                                            <TextBlock Grid.Column="2" Text="{Binding CardRefund, Converter={StaticResource CurrencyFormatConverter}}" TextAlignment="Right" FontSize="13" FontWeight="SemiBold" Margin="10,0"/>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                            <Grid Margin="0,8,0,2">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="230"/>
+                                    <ColumnDefinition Width="70"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="Total Refunds" FontSize="13" FontWeight="Bold"/>
+                                <TextBlock Grid.Column="2" Text="{Binding TotalRefundsDisplayed, Converter={StaticResource CurrencyFormatConverter}}" TextAlignment="Right" FontSize="13" FontWeight="Bold" Margin="10,0"/>
+                            </Grid>
+
+                                <!-- Voids & Cancelled Orders -->
+                         <!--   <TextBlock Text="Voids &amp; Cancelled Orders" FontWeight="Bold" FontSize="14" Margin="0,15,0,5"/>
+                            <Border BorderBrush="#EEEEEE" BorderThickness="0,0,0,1" Margin="0,0,0,5"/>
+                             <Grid Margin="0,2">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="POS" FontSize="13"/>
+                                <TextBlock Grid.Column="1" Text="{Binding ZReportStats.PosVoidSales, Converter={StaticResource CurrencyFormatConverter}}" FontSize="13" FontWeight="SemiBold" Margin="10,0"/>
+                                        </Grid>
+                             <Grid Margin="0,2">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="Platform Orders" FontSize="13"/>
+                                <TextBlock Grid.Column="1" Text="{Binding ZReportStats.PlatformVoidSales, Converter={StaticResource CurrencyFormatConverter}}" FontSize="13" FontWeight="SemiBold" Margin="10,0"/>
+                                        </Grid>
+                            <Grid Margin="0,8,0,2">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="Total Cancelled" FontSize="13" FontWeight="Bold"/>
+                                <TextBlock Grid.Column="1" Text="{Binding ZReportStats.TotalVoidSales, Converter={StaticResource CurrencyFormatConverter}}" FontSize="13" FontWeight="Bold" Margin="10,0"/>
+                                        </Grid> -->
+
+                                <!-- Adjustments & Discounts -->
+                            <TextBlock Text="Adjustments &amp; Discounts" FontWeight="Bold" FontSize="14" Margin="0,15,0,5"/>
+                            <Border BorderBrush="#EEEEEE" BorderThickness="0,0,0,1" Margin="0,0,0,5"/>
+                            <!-- Discount Subheading -->
+                            <TextBlock Text="Discount" FontWeight="SemiBold" FontSize="12" Margin="0,5,0,2" Foreground="#666"/>
+                            <Grid Margin="0,2">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="230"/>
+                                                <ColumnDefinition Width="70"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="-POS" FontSize="13"/>
+                                <!--<TextBlock Grid.Column="1" Text="{Binding ZReportStats.PosDiscountOrderCount}" FontSize="13" FontWeight="SemiBold" Margin="10,0"/>-->
+                                <TextBlock Grid.Column="2" Text="{Binding ZReportStats.PosDiscount, Converter={StaticResource CurrencyFormatConverter}}" TextAlignment="Right" FontSize="13" FontWeight="SemiBold" Margin="10,0"/>
+                                        </Grid>
+                            <ItemsControl ItemsSource="{Binding FilteredPlatformDiscountStats}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid Margin="0,2">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="230"/>
+                                                <ColumnDefinition Width="70"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Grid.Column="0" Text="{Binding PlatformName, StringFormat=-{0}}" FontSize="13"/>
+                                            <!--<TextBlock Grid.Column="1" Text="{Binding DiscountOrderCount}" FontSize="13" FontWeight="SemiBold" Margin="10,0"/>-->
+                                            <TextBlock Grid.Column="2" Text="{Binding Discount, Converter={StaticResource CurrencyFormatConverter}}" TextAlignment="Right" FontSize="13" FontWeight="SemiBold" Margin="10,0"/>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                            <!-- Voucher Discount Subheading -->
+                            <TextBlock Text="Voucher Discount" FontWeight="SemiBold" FontSize="12" Margin="0,5,0,2" Foreground="#666"/>
+                            <Grid Margin="0,2">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="230"/>
+                                                <ColumnDefinition Width="70"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="-POS" FontSize="13"/>
+                                <!--<TextBlock Grid.Column="1" Text="{Binding ZReportStats.PosVoucherDiscountOrderCount}" FontSize="13" FontWeight="SemiBold" Margin="10,0"/>-->
+                                <TextBlock Grid.Column="2" Text="{Binding PosVoucherDiscount, Converter={StaticResource CurrencyFormatConverter}}" TextAlignment="Right" FontSize="13" FontWeight="SemiBold" Margin="10,0"/>
+                                        </Grid>
+                            <ItemsControl ItemsSource="{Binding FilteredPlatformVoucherStats}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid Margin="0,2">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="230"/>
+                                                <ColumnDefinition Width="70"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Grid.Column="0" Text="{Binding PlatformName, StringFormat=-{0}}" FontSize="13"/>
+                                            <!--<TextBlock Grid.Column="1" Text="{Binding VoucherDiscountOrderCount}" FontSize="13" FontWeight="SemiBold" Margin="10,0"/>-->
+                                            <TextBlock Grid.Column="2" Text="{Binding VoucherDiscount, Converter={StaticResource CurrencyFormatConverter}}" TextAlignment="Right" FontSize="13" FontWeight="SemiBold" Margin="10,0"/>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                            <Grid Margin="0,8,0,2">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="230"/>
+                                                <ColumnDefinition Width="70"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="Total Discounts" FontSize="13" FontWeight="Bold"/>
+                                <!--<TextBlock Grid.Column="1" Text="{Binding ZReportStats.TotalDiscountOrderCount}" FontSize="13" FontWeight="Bold" Margin="10,0"/>-->
+                                <TextBlock Grid.Column="2" Text="{Binding ZReportStats.TotalDiscountCalculated, Converter={StaticResource CurrencyFormatConverter}}" TextAlignment="Right" FontSize="13" FontWeight="Bold" Margin="10,0"/>
+                            </Grid>
+
+                            <!-- Cash Drawer Summary -->
+                            <TextBlock Text="Cash Drawer Summary" FontWeight="Bold" FontSize="14" Margin="0,15,0,5"/>
+                            <Border BorderBrush="#EEEEEE" BorderThickness="0,0,0,1" Margin="0,0,0,5"/>
+                            <Grid Margin="0,2">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="Starting cash" FontSize="13"/>
+                                <TextBlock Grid.Column="1" Text="{Binding Session.OpeningBalance, Converter={StaticResource CurrencyFormatConverter}}" FontSize="13" FontWeight="SemiBold" Margin="10,0"/>
+                            </Grid>
+                             <Grid Margin="0,2">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="POS Sales" FontSize="13"/>
+                                <TextBlock Grid.Column="1" Text="{Binding Session.TotalSalesAmount, Converter={StaticResource CurrencyFormatConverter}}" FontSize="13" FontWeight="SemiBold" Margin="10,0"/>
+                            </Grid>
+                             <Grid Margin="0,2">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="Other Sales" FontSize="13"/>
+                                <TextBlock Grid.Column="1" Text="{Binding Session.OtherSalesAmount, Converter={StaticResource CurrencyFormatConverter}}" FontSize="13" FontWeight="SemiBold" Margin="10,0"/>
+                            </Grid>
+                             <Grid Margin="0,2">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="Cash Refunds" FontSize="13"/>
+                                <TextBlock Grid.Column="1" Text="{Binding Session.TotalRefundAmount, Converter={StaticResource CurrencyFormatConverter}}" FontSize="13" FontWeight="SemiBold" Margin="10,0"/>
+                            </Grid>
+                             <Grid Margin="0,2">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text=" -Cash Sale Cash refund" FontSize="13"/>
+                                <TextBlock Grid.Column="1" Text="{Binding CashDrawerCashSaleCashRefundAmount, Converter={StaticResource CurrencyFormatConverter}}" FontSize="13" FontWeight="SemiBold" Margin="10,0"/>
+                            </Grid>
+                             <Grid Margin="0,2">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text=" -Card Sale Cash refund" FontSize="13"/>
+                                <TextBlock Grid.Column="1" Text="{Binding Session.TotalCardSaleCashRefundAmount, Converter={StaticResource CurrencyFormatConverter}}" FontSize="13" FontWeight="SemiBold" Margin="10,0"/>
+                            </Grid>
+                             <Grid Margin="0,2">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="Cash in" FontSize="13"/>
+                                <TextBlock Grid.Column="1" Text="{Binding Session.TotalInAmount, Converter={StaticResource CurrencyFormatConverter}}" FontSize="13" FontWeight="SemiBold" Margin="10,0"/>
+                            </Grid>
+                             <Grid Margin="0,2">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="Cash out" FontSize="13"/>
+                                <TextBlock Grid.Column="1" Text="{Binding Session.TotalOutAmount, Converter={StaticResource CurrencyFormatConverter}}" FontSize="13" FontWeight="SemiBold" Margin="10,0"/>
+                            </Grid>
+                             <Grid Margin="0,2">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="Expected Cash Balance" FontSize="13"/>
+                                <TextBlock Grid.Column="1" Text="{Binding Session.ClosingBalanceExpected, Converter={StaticResource CurrencyFormatConverter}}" FontSize="13" FontWeight="SemiBold" Margin="10,0"/>
+                            </Grid>
+                             <Grid Margin="0,2">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="Actual Counted Cash" FontSize="13"/>
+                                <TextBlock Grid.Column="1" Text="{Binding Session.ClosingBalanceCounted, Converter={StaticResource CurrencyFormatConverter}}" FontSize="13" FontWeight="SemiBold" Margin="10,0">
+                                     <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="Text" Value="N/A"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding Session.ClosingBalanceCounted}" Value="{x:Null}">
+                                                    <Setter Property="Text" Value="N/A"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                            </Grid>
+                             <Grid Margin="0,2">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="Difference (Over/Short)" FontSize="13"/>
+                                <TextBlock Grid.Column="1" Text="{Binding Session.Difference, Converter={StaticResource CurrencyFormatConverter}}" FontSize="13" FontWeight="SemiBold" Margin="10,0"/>
+                                        </Grid>
+
+                                <!-- Tax Summary -->
+                            <TextBlock Text="Tax Summary" FontWeight="Bold" FontSize="14" Margin="0,15,0,5" Visibility="{Binding HasTaxSummary, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                            <Border BorderBrush="#EEEEEE" BorderThickness="0,0,0,1" Margin="0,0,0,5" Visibility="{Binding HasTaxSummary, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="230"/>
+                                    <ColumnDefinition Width="70"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="" FontSize="13"/>
+                                <TextBlock Grid.Column="1" Text="Tax" FontSize="13" TextAlignment="Center"/>
+                                <TextBlock Grid.Column="2" Text="Taxable Amount" FontSize="13" Margin="20,0,0,0" TextAlignment="Center"/>
+                            </Grid>
+                            <StackPanel Visibility="{Binding HasTaxSummary, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                        <ItemsControl ItemsSource="{Binding ZReportStats.TaxSummary.TaxBreakdown}">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                            <Grid Margin="0,2">
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="230"/>
+                                                            <ColumnDefinition Width="70"/>
+                                                            <ColumnDefinition Width="*"/>
+                                                        </Grid.ColumnDefinitions>
+                                                <TextBlock Grid.Column="0" FontSize="13">
+                                                            <Run Text="{Binding Value.TaxRateDisplay, Mode=OneWay}"/>
+                                                            <Run Text=" + "/>
+                                                            <Run Text="{Binding Value.TaxCode, Mode=OneWay}"/>
+                                                        </TextBlock>
+                                                <TextBlock Grid.Column="1" Text="{Binding Value.TaxAmount, Converter={StaticResource CurrencyFormatConverter}}" FontSize="13" FontWeight="SemiBold" Margin="10,0"/>
+                                                <TextBlock Grid.Column="2" Text="{Binding Value.OrderAmount, Converter={StaticResource CurrencyFormatConverter}}" TextAlignment="Right" FontSize="13" FontWeight="SemiBold" Margin="10,0"/>
+                                                    </Grid>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                <Grid Margin="0,8,0,2" >
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="230"/>
+                                                <ColumnDefinition Width="70"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="Total Taxes" FontSize="13" FontWeight="Bold"/>
+                                    <TextBlock Grid.Column="1" Text="{Binding ZReportStats.TaxSummary.TotalTaxAmount, Converter={StaticResource CurrencyFormatConverter}}" FontSize="13" FontWeight="Bold" Margin="10,0"/>
+                                    <TextBlock Grid.Column="2" Text="{Binding ZReportStats.TaxSummary.TotalOrderAmount, Converter={StaticResource CurrencyFormatConverter}}" TextAlignment="Right" FontSize="13" FontWeight="Bold" Margin="10,0"/>
+                                        </Grid>
+                                    </StackPanel>
+
+                                <!-- Net Sales Summary -->
+                            <TextBlock Text="Net Sales Summary" FontWeight="Bold" FontSize="14" Margin="0,15,0,5"/>
+                            <Border BorderBrush="#EEEEEE" BorderThickness="0,0,0,1" Margin="0,0,0,5"/>
+                             <Grid Margin="0,2">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="Gross Sales" FontSize="13"/>
+                                <TextBlock Grid.Column="1" Text="{Binding ZReportStats.TotalGrossSales}" FontSize="13" FontWeight="SemiBold" Margin="10,0"/>
+                                        </Grid>
+                             <Grid Margin="0,2">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="Discounts" FontSize="13"/>
+                                <TextBlock Grid.Column="1" Text="{Binding ZReportStats.TotalDiscount}" FontSize="13" FontWeight="SemiBold" Margin="10,0"/>
+                                        </Grid>
+                             <Grid Margin="0,2">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="Refunds (Cash + Card)" FontSize="13"/>
+                                <TextBlock Grid.Column="1" Text="{Binding ZReportStats.TotalRefunds}" FontSize="13" FontWeight="SemiBold" Margin="10,0"/>
+                                        </Grid>
+                             <Grid Margin="0,2">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="Net Sales" FontSize="13"/>
+                                <TextBlock Grid.Column="1" Text="{Binding ZReportStats.TotalNetSales}" FontSize="13" FontWeight="SemiBold" Margin="10,0"/>
+                                        </Grid>
+
+                            </StackPanel>
+                    </StackPanel>
+                </ScrollViewer>
+
+                <!-- Close Button -->
+                <Button Grid.Row="3" 
+                        Content="Close" 
+                        Background="#1976D2" 
+                        Foreground="White" 
+                        BorderBrush="Transparent" 
+                        FontSize="14" 
+                        Width="100" 
+                        Height="35" 
+                        HorizontalAlignment="Center" 
+                        Margin="0,10,0,0"
+                        Click="CloseButton_Click"/>
+
+                <!-- Loading Overlay for Report Printing -->
+                <Grid Grid.RowSpan="4" 
+                      Visibility="{Binding IsPrinting, Converter={StaticResource BooleanToVisibilityConverter}}" 
+                      Background="#80BDBDBD" Panel.ZIndex="9999">
+                    <controls:LoadingIndicator HorizontalAlignment="Center" 
+                                               VerticalAlignment="Center" 
+                                               ProgressRingSize="70"/>
+                </Grid>
+             </Grid>
+         </Border>
+     </Grid>
+ </UserControl>

@@ -1,0 +1,210 @@
+name: Deploy POS-SERVICE-GOLANG
+on:
+  push:
+    branches:
+      - dev
+      - qa
+      - prod
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      PROJECT_NAME: "pos-service-golang"
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set Environment Variables
+        run: |
+          if [[ $GITHUB_REF == "refs/heads/prod" ]]; then
+            echo "ENVIRONMENT=prod" >> $GITHUB_ENV
+            echo "EC2_USER=${{ secrets.PROD_AWS_EC2_USER }}" >> $GITHUB_ENV
+            echo "EC2_INSTANCE_ID=${{ secrets.PROD_AWS_EC2_INSTANCE_ID }}" >> $GITHUB_ENV
+            echo "PROJECT_BASE_DIR=/var/www/github/${{ env.PROJECT_NAME }}" >> $GITHUB_ENV
+          elif [[ $GITHUB_REF == "refs/heads/qa" ]]; then
+            echo "ENVIRONMENT=qa" >> $GITHUB_ENV
+            echo "EC2_USER=${{ secrets.DEV_AWS_EC2_USER }}" >> $GITHUB_ENV
+            echo "EC2_INSTANCE_ID=${{ secrets.DEV_AWS_EC2_INSTANCE_ID }}" >> $GITHUB_ENV
+            echo "PROJECT_BASE_DIR=/var/www/github/qa/${{ env.PROJECT_NAME }}" >> $GITHUB_ENV
+          else
+            echo "ENVIRONMENT=dev" >> $GITHUB_ENV
+            echo "EC2_USER=${{ secrets.DEV_AWS_EC2_USER }}" >> $GITHUB_ENV
+            echo "EC2_INSTANCE_ID=${{ secrets.DEV_AWS_EC2_INSTANCE_ID }}" >> $GITHUB_ENV
+            echo "PROJECT_BASE_DIR=/var/www/github/${{ env.PROJECT_NAME }}" >> $GITHUB_ENV
+          fi
+
+      - name: Configure AWS CLI
+        run: |
+          aws configure set aws_access_key_id ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws configure set aws_secret_access_key ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws configure set default.region ${{ secrets.AWS_REGION }}
+
+      - name: Get EC2 Public IP and Security Group ID
+        run: |
+          PUBLIC_IP=$(aws ec2 describe-instances --instance-ids ${{ env.EC2_INSTANCE_ID }} --query "Reservations[0].Instances[0].PublicIpAddress" --output text)
+          echo "EC2_PUBLIC_IP=$PUBLIC_IP" >> $GITHUB_ENV
+          SECURITY_GROUP_ID=$(aws ec2 describe-instances --instance-ids ${{ env.EC2_INSTANCE_ID }} --query "Reservations[].Instances[].SecurityGroups[0].GroupId" --output text)
+          echo "SECURITY_GROUP_ID=$SECURITY_GROUP_ID" >> $GITHUB_ENV
+          RUNNER_IP=$(curl -s http://checkip.amazonaws.com)
+          echo "RUNNER_IP=$RUNNER_IP" >> $GITHUB_ENV
+
+      - name: Allow SSH access from GitHub Actions runner IP
+        run: |
+          aws ec2 authorize-security-group-ingress --group-id ${{ env.SECURITY_GROUP_ID }} --protocol tcp --port 22 --cidr ${{ env.RUNNER_IP }}/32
+        continue-on-error: true
+
+      - name: Set up SSH
+        uses: webfactory/ssh-agent@v0.5.3
+        with:
+          ssh-private-key: ${{ secrets.AWS_SSH_PRIVATE_KEY }}
+
+      - name: Prepare EC2 Deployment Directory Structure
+        env:
+          EC2_IP: ${{ env.EC2_PUBLIC_IP }}
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ env.EC2_USER }}@${{ env.EC2_IP }} << 'EOF'
+            set -e
+            PROJECT_BASE_DIR="${{ env.PROJECT_BASE_DIR }}"
+            RELEASES_DIR="${{ env.PROJECT_BASE_DIR }}/releases"
+            CURRENT_DIR="${{ env.PROJECT_BASE_DIR }}/current"
+
+            # Create base directories if they don't exist
+            if [ ! -d "$PROJECT_BASE_DIR" ]; then
+              sudo mkdir -p "$PROJECT_BASE_DIR"
+            fi
+
+            if [ ! -d "$RELEASES_DIR" ]; then
+              sudo mkdir -p "$RELEASES_DIR"
+            fi
+
+            if [ ! -d "$CURRENT_DIR" ]; then
+              sudo mkdir -p "$CURRENT_DIR"
+            fi
+
+            sudo chown -R $USER:$USER "$PROJECT_BASE_DIR"
+          EOF
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: "1.21"
+
+      - name: Download Go Dependencies
+        run: |
+          go mod download
+
+      - name: Build Go Binary for aarch64
+        run: |
+          GOOS=linux GOARCH=arm64 go build -o ${{ env.PROJECT_NAME }} ./cmd/main.go
+          chmod +x ${{ env.PROJECT_NAME }}
+
+      - name: Create Release Directory with Timestamp
+        env:
+          EC2_IP: ${{ env.EC2_PUBLIC_IP }}
+        run: |
+          TIMESTAMP=$(date +%Y%m%d%H%M%S)
+          echo "RELEASE_TIMESTAMP=$TIMESTAMP" >> $GITHUB_ENV
+          ssh -o StrictHostKeyChecking=no ${{ env.EC2_USER }}@${{ env.EC2_IP }} << EOF
+            set -e
+            RELEASE_DIR="${{ env.PROJECT_BASE_DIR }}/releases/release_$TIMESTAMP"
+            mkdir -p "\$RELEASE_DIR"
+            echo "Created release directory: \$RELEASE_DIR"
+          EOF
+
+      - name: Rsync Binary and Scripts to New Release
+        env:
+          EC2_IP: ${{ env.EC2_PUBLIC_IP }}
+        run: |
+          rsync -avz \
+            --include "${{ env.PROJECT_NAME }}" \
+            --include "scripts/" \
+            --include "scripts/fetch_env.sh" \
+            --exclude "*" \
+            ./ ${{ env.EC2_USER }}@${{ env.EC2_IP }}:${{ env.PROJECT_BASE_DIR }}/releases/release_${{ env.RELEASE_TIMESTAMP }}/
+
+      - name: Set Permissions for Binary and Scripts
+        env:
+          EC2_IP: ${{ env.EC2_PUBLIC_IP }}
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ env.EC2_USER }}@${{ env.EC2_IP }} << 'EOF'
+            set -e
+            RELEASE_DIR="${{ env.PROJECT_BASE_DIR }}/releases/release_${{ env.RELEASE_TIMESTAMP }}"
+            chmod +x "$RELEASE_DIR/${{ env.PROJECT_NAME }}"
+            chmod +x "$RELEASE_DIR/scripts/fetch_env.sh"
+          EOF
+
+      - name: Fetch Environment Variables from AWS Parameter Store
+        env:
+          EC2_IP: ${{ env.EC2_PUBLIC_IP }}
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ env.EC2_USER }}@${{ env.EC2_IP }} << 'EOF'
+            set -e
+            export ENVIRONMENT="${{ env.ENVIRONMENT }}"
+            export RELEASE_DIR="${{ env.PROJECT_BASE_DIR }}/releases/release_${{ env.RELEASE_TIMESTAMP }}"
+            bash "$RELEASE_DIR/scripts/fetch_env.sh"
+          EOF
+
+      - name: Update Symlink and Restart Service
+        env:
+          EC2_IP: ${{ env.EC2_PUBLIC_IP }}
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ env.EC2_USER }}@${{ env.EC2_IP }} << 'EOF'
+            set -e
+            PROJECT_BASE_DIR="${{ env.PROJECT_BASE_DIR }}"
+            RELEASE_DIR="$PROJECT_BASE_DIR/releases/release_${{ env.RELEASE_TIMESTAMP }}"
+            CURRENT_DIR="$PROJECT_BASE_DIR/current"
+
+            # Remove old current symlink/directory if it exists
+            if [ -L "$CURRENT_DIR" ] || [ -d "$CURRENT_DIR" ]; then
+              rm -rf "$CURRENT_DIR"
+            fi
+
+            # Create symlink to new release
+            ln -sf "$RELEASE_DIR" "$CURRENT_DIR"
+            echo "✅ Symlink updated: $CURRENT_DIR -> $RELEASE_DIR"
+
+            # Update supervisor configuration
+            if [ "${{ env.ENVIRONMENT }}" == "prod" ]; then
+              SUPERVISOR_CONF="/etc/supervisor/conf.d/prod-pos-service-golang.conf"
+            elif [ "${{ env.ENVIRONMENT }}" == "qa" ]; then
+              SUPERVISOR_CONF="/etc/supervisor/conf.d/qa-pos-service-golang.conf"
+            else
+              SUPERVISOR_CONF="/etc/supervisor/conf.d/dev-pos-service-golang.conf"
+            fi
+
+            echo "[program:${{ env.PROJECT_NAME }}-${{ env.ENVIRONMENT }}]
+            command=$CURRENT_DIR/${{ env.PROJECT_NAME }}
+            directory=$CURRENT_DIR
+            autostart=true
+            autorestart=true
+            stderr_logfile=/var/log/${{ env.PROJECT_NAME }}-${{ env.ENVIRONMENT }}.err.log
+            stdout_logfile=/var/log/${{ env.PROJECT_NAME }}-${{ env.ENVIRONMENT }}.out.log
+            environment=PATH=\"/usr/local/go/bin:/home/ubuntu/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin\"" | sudo tee "$SUPERVISOR_CONF"
+
+            sudo supervisorctl reread
+            sudo supervisorctl update
+            sudo supervisorctl restart ${{ env.PROJECT_NAME }}-${{ env.ENVIRONMENT }} || true
+
+            echo "✅ Service restarted successfully"
+          EOF
+
+      - name: Cleanup Old Releases
+        env:
+          EC2_IP: ${{ env.EC2_PUBLIC_IP }}
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ env.EC2_USER }}@${{ env.EC2_IP }} << 'EOF'
+            set -e
+            RELEASES_DIR="${{ env.PROJECT_BASE_DIR }}/releases"
+
+            # Keep only the last 5 releases
+            cd "$RELEASES_DIR"
+            ls -t | tail -n +6 | xargs -r rm -rf
+
+            echo "✅ Cleaned up old releases, kept last 5"
+          EOF
+
+      - name: Revoke SSH access
+        if: always()
+        run: |
+          aws ec2 revoke-security-group-ingress --group-id ${{ env.SECURITY_GROUP_ID }} --protocol tcp --port 22 --cidr ${{ env.RUNNER_IP }}/32
+        continue-on-error: true

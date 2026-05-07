@@ -1,0 +1,1 @@
+DROP TABLE `pos_refresh_tokens`;

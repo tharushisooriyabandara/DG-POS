@@ -1,0 +1,1 @@
+DROP TABLE IF EXISTS `dg_pos_cash_movements`;

@@ -1,0 +1,373 @@
+<view:OptimizedDialogBase x:Class="POS_UI.View.OrderDetailsDialog"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             xmlns:converters="clr-namespace:POS_UI.Converters"
+             xmlns:controls="clr-namespace:POS_UI.View.Controls"
+             xmlns:view="clr-namespace:POS_UI.View"
+             Height="600" Width="429" Background="#F8F8F8" BorderBrush="Transparent">
+    <view:OptimizedDialogBase.Resources>
+        <converters:StringToVisibilityConverter x:Key="StringToVisibilityConverter"/>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+        <converters:InvertBooleanConverter x:Key="InvertBooleanConverter"/>
+        <converters:DivideByHundredConverter x:Key="DivideByHundredConverter"/>
+        <converters:DecimalToVisibilityConverter x:Key="DecimalToVisibilityConverter"/>
+        <converters:DiscountLineAmountConverter x:Key="DiscountLineAmountConverter"/>
+    </view:OptimizedDialogBase.Resources>
+    <Border Background="White" BorderBrush="{x:Null}" BorderThickness="0" SnapsToDevicePixels="True">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="60"/>
+            </Grid.RowDefinitions>
+            <!-- Header -->
+            <Border Grid.Row="0" Background="#10B26C"  Height="56" VerticalAlignment="Top">
+                <DockPanel VerticalAlignment="Center">
+                    <TextBlock Text="New Order" Foreground="White" FontWeight="Bold" FontSize="24" Margin="24,0,0,0" VerticalAlignment="Center"/>
+                    <Button Width="32" Height="52" HorizontalAlignment="Right" VerticalAlignment="Center" Style="{StaticResource MaterialDesignToolButton}" Command="{Binding CloseCommand}" ToolTip="Close" Margin="-8,-15,0,0">
+                        <materialDesign:PackIcon Kind="Close" Width="25" Height="42" HorizontalAlignment="Center" RenderTransformOrigin="0.45,0.963" Foreground="Black"/>
+                    </Button>
+                </DockPanel>
+            </Border>
+            <!-- Main Content -->
+            <Grid Grid.Row="1" Margin="25,15,25,0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <!-- Order Info Row -->
+                <Grid Grid.Row="0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel>
+                        <!-- Order Number and Delivery Type Row -->
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock Text="{Binding OrderNumber}" FontWeight="Bold" FontSize="18"/>
+                            <Border CornerRadius="4" Padding="6,2" Margin="8,0,0,0" Background="#FFFFA600" VerticalAlignment="Center">
+                                <TextBlock Text="{Binding DeliveryTypeDisplay}" FontWeight="Bold" FontSize="12" Foreground="Black"/>
+                            </Border>
+                        </StackPanel>
+                        <!-- Order Type Time and Customer Name Row -->
+                        <StackPanel Orientation="Vertical" VerticalAlignment="Center" Margin="0,2,0,0">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="{Binding OrderTypeName}" FontWeight="SemiBold" />
+                                <TextBlock Text=" : " FontWeight="SemiBold"/>
+                                <TextBlock Text="{Binding OrderTypeTimeFormatted}" />
+                            </StackPanel>
+                            <!-- Address shown only when address is present -->
+                            <Grid Margin="0,2,0,0"
+                                  Visibility="{Binding HasAddress, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="Address : " Margin="0,0,4,0" FontWeight="SemiBold"/>
+                                <TextBlock Grid.Column="1" Text="{Binding AddressDisplay}" TextWrapping="Wrap"/>
+                            </Grid>
+                            
+                            <!-- Table Name shown only for Table orders -->
+                            <Grid Margin="0,2,0,0">
+                                <Grid.Style>
+                                    <Style TargetType="Grid">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                        <Style.Triggers>
+                                            <MultiDataTrigger>
+                                                <MultiDataTrigger.Conditions>
+                                                    <Condition Binding="{Binding IsTableOrder}" Value="True"/>
+                                                    <Condition Binding="{Binding HasTableName}" Value="True"/>
+                                                </MultiDataTrigger.Conditions>
+                                                <Setter Property="Visibility" Value="Visible"/>
+                                            </MultiDataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Grid.Style>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="Table Name : " Margin="0,0,4,0" FontWeight="SemiBold"/>
+                                <TextBlock Grid.Column="1" Text="{Binding SelectedTableName}" TextWrapping="Wrap"/>
+                            </Grid>
+                            <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Customer : " FontWeight="SemiBold"/>
+                            <TextBlock Text="{Binding CustomerName}" />
+                            </StackPanel>
+                            <!-- Contact access code shown for UberEats/platformId=2 when present -->
+                            <Grid Margin="0,2,0,0" Visibility="{Binding ShowContactAccessCode, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="Customer Code : " Margin="0,0,4,0" FontWeight="SemiBold"/>
+                                <TextBlock Grid.Column="1" Text="{Binding ContactAccessCode}"/>
+                            </Grid>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="Contact : " FontWeight="SemiBold"/>
+                                <TextBlock Text="{Binding Contact}" />
+                            </StackPanel>
+                        </StackPanel>
+                       
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" VerticalAlignment="Top">
+                        <Border>
+                            <Image Source="{Binding PlatformLogoUrl, FallbackValue={x:Null}, TargetNullValue={x:Null}}" Width="70" Height="45" Stretch="Uniform"/>
+                        </Border>
+                        <Border Background="Red" CornerRadius="4" Padding="6,2" Margin="0,4,0,0"
+                                Visibility="{Binding HasPaymentStatus, Converter={StaticResource BooleanToVisibilityConverter}}">
+                            <TextBlock Text="{Binding PaymentStatus}" FontWeight="Bold" FontSize="11" Foreground="White" HorizontalAlignment="Center"/>
+                        </Border>
+                    </StackPanel>
+                </Grid>
+                <!-- Items List in ScrollViewer -->
+                <Grid Grid.Row="1">
+                <ScrollViewer x:Name="OrderItemsScrollViewer" Margin="0,18,0,0" 
+                              VerticalScrollBarVisibility="Hidden" PanningMode="None">
+                    <Border>
+                        <Border.Style>
+                            <Style TargetType="Border">
+                                <Setter Property="Padding" Value="0"/>
+                                <Style.Triggers>
+                                    <DataTrigger Value="Visible">
+                                        <DataTrigger.Binding>
+                                            <Binding Path="ComputedVerticalScrollBarVisibility" RelativeSource="{RelativeSource AncestorType=ScrollViewer}"/>
+                                        </DataTrigger.Binding>
+                                        <Setter Property="Padding" Value="0,0,5,0"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Border.Style>
+                    <ItemsControl ItemsSource="{Binding Items}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Grid Margin="0,0,0,6">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="45"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="80"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+                                    <!-- Row 0: Name (left), Quantity (center), Price (left) -->
+
+                                    <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding Name}" FontWeight="SemiBold" FontSize="13" HorizontalAlignment="Left"/>
+                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="{Binding Quantity, StringFormat='{}{0}   X '}" FontWeight="SemiBold" HorizontalAlignment="Center" FontSize="13" Margin="-10,0,0,0"/>
+                                    <TextBlock Grid.Row="0" Grid.Column="2" Text="{Binding ApiItemTotal, Converter={StaticResource CurrencyFormatConverter}}" FontWeight="SemiBold" FontSize="13" HorizontalAlignment="Right" TextAlignment="Right"/>
+
+                                    <!-- Item Discount -->
+
+                                    <!-- Row 1: Discount, Notes, Modifiers spanning all columns -->
+                                    <StackPanel Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="3">
+
+                                        <Grid Margin="45,0,0,2"
+                                              Visibility="{Binding DiscountAmount, Converter={StaticResource DecimalToVisibilityConverter}}">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Grid.Column="0"
+                                                       Text="Discount"
+                                                       FontSize="11"
+                                                       Foreground="#888"
+                                                       Margin="0,0,8,0"/>
+                                            <TextBlock Grid.Column="1"
+                                                       FontSize="11"
+                                                       Foreground="#FF5A5F"
+                                                       HorizontalAlignment="Right">
+                                                <TextBlock.Text>
+                                                    <MultiBinding Converter="{StaticResource DiscountLineAmountConverter}">
+                                                        <Binding Path="DiscountAmount"/>
+                                                        <Binding Path="Quantity"/>
+                                                        <Binding Source="{x:Null}"/>
+                                                        <Binding Path="DataContext.PlatformId" RelativeSource="{RelativeSource AncestorType=UserControl}"/>
+                                                        <Binding Path="DataContext.Platform" RelativeSource="{RelativeSource AncestorType=UserControl}"/>
+                                                    </MultiBinding>
+                                                </TextBlock.Text>
+                                            </TextBlock>
+                                        </Grid>
+
+                                        <!-- Notes -->
+                                        <TextBlock Text="Additional Notes" FontWeight="Bold" FontSize="11" Visibility="{Binding Notes, Converter={StaticResource StringToVisibilityConverter}}" Margin="45,0,0,0"/>
+                                        <TextBlock Text="{Binding Notes}" FontSize="11" Foreground="#888" Visibility="{Binding Notes, Converter={StaticResource StringToVisibilityConverter}}"/>
+                                        <!-- Modifiers (with nested) -->
+                                        <ItemsControl ItemsSource="{Binding ModifierDetailsForDisplay}">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Grid Margin="0,0,0,1">
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="Auto"/>
+                                                            <ColumnDefinition Width="*"/>
+                                                            <ColumnDefinition Width="Auto"/>
+                                                        </Grid.ColumnDefinitions>
+                                                        <TextBlock Grid.Column="0"
+                                                                   Text="{Binding Indentation}"
+                                                                   Foreground="Transparent"
+                                                                   FontSize="11"
+                                                                   VerticalAlignment="Center"/>
+                                                        <TextBlock Grid.Column="1"
+                                                                   Text="{Binding ModifierName}"
+                                                                   Foreground="#666"
+                                                                   FontWeight="Normal"
+                                                                   FontSize="11"
+                                                                   TextAlignment="Left"
+                                                                   VerticalAlignment="Center"
+                                                                   TextTrimming="CharacterEllipsis"/>
+                                                        <TextBlock Grid.Column="2"
+                                                                   Text="{Binding Price, Converter={StaticResource CurrencyFormatConverter}}"
+                                                                   Foreground="#666"
+                                                                   FontWeight="Normal"
+                                                                   FontSize="11"
+                                                                   TextAlignment="Right"
+                                                                   HorizontalAlignment="Right"
+                                                                   VerticalAlignment="Center"
+                                                                   Margin="8,0,0,0"/>
+                                                    </Grid>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </StackPanel>
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    </Border>
+                </ScrollViewer>
+                <Border x:Name="ItemsFadeOverlay" VerticalAlignment="Bottom" Height="60" IsHitTestVisible="False" Opacity="0">
+                    <Border.Background>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                            <GradientStop Color="#00FFFFFF" Offset="0"/>
+                            <GradientStop Color="#FFFFFFFF" Offset="1"/>
+                        </LinearGradientBrush>
+                    </Border.Background>
+                </Border>
+                </Grid>
+                <!-- Bottom Summary: Order Notes and Subtotal/Total -->
+                <StackPanel Grid.Row="2" Margin="0,10,0,0">
+                    <ScrollViewer  MaxHeight="100" VerticalScrollBarVisibility="Auto">
+                        <StackPanel>
+                            <TextBlock Text="Order Notes" FontWeight="Normal" FontSize="13"/>
+                            <TextBlock Text="{Binding OrderNotes}" FontSize="11" Foreground="#888" TextWrapping="Wrap"/>
+                            <Separator/>
+                        </StackPanel>
+                    </ScrollViewer>
+
+                    <!-- Subtotal/Fees/Total -->
+                    <Border Background="#EEEEEE" CornerRadius="8" Padding="8,5" Margin="0,5,0,5">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="60"/>
+                                <ColumnDefinition Width="80"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            
+                            <!-- Subtotal Row -->
+                            <TextBlock Grid.Row="0" Grid.Column="0" Text="Subtotal" FontSize="12" HorizontalAlignment="Left"/>
+                            <TextBlock Grid.Row="0" Grid.Column="2" Text="{Binding Subtotal, Converter={StaticResource CurrencyFormatConverter}}" FontSize="12" HorizontalAlignment="Right" TextAlignment="Right"/>
+                            
+                            <!-- BOGO Discount Row -->
+                            <TextBlock Grid.Row="1" Grid.Column="0" Text="BOGO Discount" FontSize="12" HorizontalAlignment="Left" 
+                                       Visibility="{Binding HasBogoDiscount, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                            <TextBlock Grid.Row="1" Grid.Column="2" Text="{Binding BogoDiscount, Converter={StaticResource CurrencyFormatConverter}}" FontSize="12" Foreground="#FF5A5F" HorizontalAlignment="Right" TextAlignment="Right"
+                                       Visibility="{Binding HasBogoDiscount, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                            
+                            <!-- Shop Fees Rows -->
+                            <ItemsControl Grid.Row="2" Grid.ColumnSpan="3" ItemsSource="{Binding ShopFeeRows}" 
+                                          Visibility="{Binding HasShopFees, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="60"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Grid.Column="0" Text="{Binding Label}" FontSize="12" HorizontalAlignment="Left"/>
+                                            <TextBlock Grid.Column="2" Text="{Binding Amount, Converter={StaticResource CurrencyFormatConverter}}" FontSize="12" Foreground="#666" HorizontalAlignment="Right" TextAlignment="Right"/>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                            
+                            <!-- Delivery Charges Row -->
+                            <TextBlock Grid.Row="3" Grid.Column="0" Text="Delivery Charges" FontSize="12" HorizontalAlignment="Left"
+                                       Visibility="{Binding HasDeliveryCharges, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                            <TextBlock Grid.Row="3" Grid.Column="2" Text="{Binding DeliveryCharges, Converter={StaticResource CurrencyFormatConverter}}" FontSize="12" Foreground="#666" HorizontalAlignment="Right" TextAlignment="Right"
+                                       Visibility="{Binding HasDeliveryCharges, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                            
+                            <!-- Reward Discount Row -->
+                            <TextBlock Grid.Row="4" Grid.Column="0" Text="Reward Discount" FontSize="12" HorizontalAlignment="Left"
+                                       Visibility="{Binding HasRewardDiscount, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                            <TextBlock Grid.Row="4" Grid.Column="2" Text="{Binding RewardDiscount, Converter={StaticResource CurrencyFormatConverter}}" FontSize="12" Foreground="#FF5A5F" HorizontalAlignment="Right" TextAlignment="Right"
+                                       Visibility="{Binding HasRewardDiscount, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                            
+                            <!-- Tips Row -->
+                            <TextBlock Grid.Row="5" Grid.Column="0" Text="Tips" FontSize="12" HorizontalAlignment="Left"
+                                       Visibility="{Binding HasTips, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                            <TextBlock Grid.Row="5" Grid.Column="2" Text="{Binding Tips, Converter={StaticResource CurrencyFormatConverter}}" FontSize="12" Foreground="#666" HorizontalAlignment="Right" TextAlignment="Right"
+                                       Visibility="{Binding HasTips, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                            
+                            <!-- Order Discount Row -->
+                            <TextBlock Grid.Row="6" Grid.Column="0" Text="{Binding DiscountDescription}" FontSize="12" HorizontalAlignment="Left"
+                                       Visibility="{Binding HasDiscount, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                            <TextBlock Grid.Row="6" Grid.Column="2" Text="{Binding OrderDiscount, Converter={StaticResource CurrencyFormatConverter}}" FontSize="12" Foreground="#FF5A5F" HorizontalAlignment="Right" TextAlignment="Right"
+                                       Visibility="{Binding HasDiscount, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                            
+                            <!-- Separator Line -->
+                            <Separator Grid.Row="7" Grid.Column="0" Grid.ColumnSpan="3" Margin="0,8,0,8" Background="#CCCCCC"/>
+                            
+                            <!-- Total Row -->
+                            <TextBlock Grid.Row="8" Grid.Column="0" Text="Total" FontWeight="Bold" FontSize="16" HorizontalAlignment="Left"/>
+                            <TextBlock Grid.Row="8" Grid.Column="2" Text="{Binding Total, Converter={StaticResource CurrencyFormatConverter}}" FontWeight="Bold" FontSize="16" HorizontalAlignment="Right" TextAlignment="Right"/>
+                        </Grid>
+                    </Border>
+                </StackPanel>
+            </Grid>
+            <!-- Footer Buttons -->
+            <Grid Grid.Row="2" Margin="16,0,16,16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition Width="8"/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+                <Border Grid.Column="0" Background="#D32F2F" CornerRadius="8">
+                    <Button Background="Transparent" Foreground="White" FontWeight="Bold" FontSize="16" Command="{Binding RejectCommand}" 
+                            Padding="4,4" BorderThickness="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                            IsEnabled="{Binding IsLoading, Converter={StaticResource InvertBooleanConverter}}">
+                        <TextBlock Text="Reject" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Button>
+                </Border>
+                <Border Grid.Column="2" Background="#10B26C" CornerRadius="8">
+                    <Button Background="Transparent" Foreground="White" FontWeight="Bold" FontSize="16" Command="{Binding AcceptCommand}" 
+                            Padding="4,4" BorderThickness="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                            IsEnabled="{Binding IsLoading, Converter={StaticResource InvertBooleanConverter}}">
+                        <TextBlock Text="Accept" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Button>
+                </Border>
+            </Grid>
+
+            <!-- Loading Overlay -->
+            <Grid Grid.RowSpan="3" 
+                  Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}" Background="#80BDBDBD">
+                <controls:LoadingIndicator HorizontalAlignment="Center" 
+                                           VerticalAlignment="Center" 
+                                           ProgressRingSize="70"/>
+            </Grid>
+        </Grid>
+    </Border>
+</view:OptimizedDialogBase> 

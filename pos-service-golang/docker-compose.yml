@@ -1,0 +1,25 @@
+services:
+  app:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      # Master Database Configuration
+      - MASTER_USER=${MASTER_USER}
+      - MASTER_PASSWORD=${MASTER_PASSWORD}
+      - MASTER_HOST=${MASTER_HOST}
+      - MASTER_PORT=${MASTER_PORT}
+      - MASTER_DB=${MASTER_DB}
+      # Other Configuration
+      - JWT_SECRET=${JWT_SECRET}
+      - ENV=${ENV:-development}
+      - PORT=${PORT:-8080}
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
+    networks:
+      - pos-network
+
+networks:
+  pos-network:
+    driver: bridge 

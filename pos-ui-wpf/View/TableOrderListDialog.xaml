@@ -1,0 +1,149 @@
+<UserControl x:Class="POS_UI.View.TableOrderListDialog"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             xmlns:converters="clr-namespace:POS_UI.Converters"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             mc:Ignorable="d"
+             d:DesignHeight="420" d:DesignWidth="450">
+    <UserControl.Resources>
+        <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+    </UserControl.Resources>
+
+    <Border Background="White" CornerRadius="20" Padding="20" Width="440" MinHeight="380">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Header: Title block + Close -->
+            <Grid Grid.Row="0" Margin="0,0,0,16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                    <TextBlock Text="{Binding TableName, StringFormat='Table: {0}'}" 
+                               FontSize="22" FontWeight="Bold" Foreground="#1a1a1a"/>
+                    <TextBlock Text="{Binding SessionId, StringFormat='Session ID: {0}'}" 
+                               FontSize="13" Foreground="#6B7280" Margin="0,4,0,0">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Visibility" Value="Visible"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding SessionId}" Value="0">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                </StackPanel>
+                <Button Grid.Column="1"
+                        Command="{Binding CloseCommand}"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Top"
+                        Style="{StaticResource MaterialDesignToolButton}"
+                        Background="Transparent"
+                        BorderBrush="Transparent"
+                        Width="36" Height="36"
+                        Margin="0,-4,0,0"
+                        ToolTip="Close">
+                    <materialDesign:PackIcon Kind="Close" Width="22" Height="22" Foreground="#6B7280"/>
+                </Button>
+            </Grid>
+
+            <!-- Section label -->
+            <TextBlock Grid.Row="1" Text="Orders" FontSize="16" FontWeight="SemiBold" Foreground="#374151" Margin="0,0,0,10"/>
+
+            <!-- Orders list with scroll -->
+            <Grid Grid.Row="2" MinHeight="200">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" 
+                              HorizontalScrollBarVisibility="Disabled"
+                              Margin="0,0,0,12">
+                    <ScrollViewer.Resources>
+                        <Style TargetType="ScrollBar" BasedOn="{StaticResource ThickScrollbar}"/>
+                    </ScrollViewer.Resources>
+                    <ItemsControl ItemsSource="{Binding Orders}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Margin="0,0,0,8" 
+                                        Background="#FAFAFA" 
+                                        BorderBrush="#E5E7EB" 
+                                        BorderThickness="1" 
+                                        CornerRadius="12" 
+                                        Padding="14,12"
+                                        Cursor="Hand">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding DisplayOrderId}" 
+                                                       FontWeight="SemiBold" FontSize="15" Foreground="#111827"/>
+                                            <TextBlock FontSize="13" Foreground="#059669" FontWeight="SemiBold" Margin="0,2,0,0">
+                                                <TextBlock.Text>
+                                                    <Binding Path="TotalAmount" Converter="{StaticResource CurrencyFormatConverter}"/>
+                                                </TextBlock.Text>
+                                            </TextBlock>
+                                        </StackPanel>
+                                        <Button Grid.Column="2"
+                                                Command="{Binding DataContext.ViewOrderCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                CommandParameter="{Binding}"
+                                                Style="{StaticResource MaterialDesignRaisedButton}"
+                                                Background="#2196F3"
+                                                Foreground="White"
+                                                BorderThickness="0"
+                                                Padding="14,8"
+                                                Height="36"
+                                                MinWidth="90"
+                                                VerticalAlignment="Center"
+                                                Cursor="Hand">
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Text="View" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                                <materialDesign:PackIcon Kind="ArrowRight" Width="18" Height="18" Margin="6,0,0,0" VerticalAlignment="Center"/>
+                                            </StackPanel>
+                                        </Button>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+
+                <!-- Empty state (overlay when no orders) -->
+                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,20,0,0">
+                    <StackPanel.Style>
+                        <Style TargetType="StackPanel">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Orders.Count}" Value="0">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </StackPanel.Style>
+                    <materialDesign:PackIcon Kind="ClipboardTextOutline" Width="48" Height="48" Foreground="#D1D5DB" HorizontalAlignment="Center"/>
+                    <TextBlock Text="No orders for this table" 
+                               FontSize="15" Foreground="#6B7280" 
+                               HorizontalAlignment="Center" Margin="0,12,0,0"/>
+                    <TextBlock Text="Orders will appear here when added." 
+                               FontSize="13" Foreground="#9CA3AF" 
+                               HorizontalAlignment="Center" Margin="0,4,0,0"/>
+                </StackPanel>
+            </Grid>
+
+            <!-- Footer: order count -->
+            <Border Grid.Row="3" Background="#F5F5F5" CornerRadius="8" Padding="12,10" Margin="0,8,0,0">
+                <TextBlock Text="{Binding Orders.Count, StringFormat='{}{0} order(s)'}" 
+                           FontSize="13" Foreground="#6B7280" HorizontalAlignment="Center"/>
+            </Border>
+        </Grid>
+    </Border>
+</UserControl>

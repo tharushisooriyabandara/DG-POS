@@ -1,0 +1,14 @@
+.env
+.air.toml
+tmp
+.notes
+db-compose.yml
+load-test.js
+truncate.sql
+
+.DS_Store
+
+# error logs
+error-log.json
+
+.mysql-data

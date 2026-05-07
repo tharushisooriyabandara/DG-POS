@@ -1,0 +1,23 @@
+CREATE TABLE `basic_details` (
+    `id` int UNSIGNED NOT NULL AUTO_INCREMENT,
+    `brand_logo` text COLLATE utf8mb4_unicode_ci NOT NULL,
+    `hero_image` text COLLATE utf8mb4_unicode_ci NOT NULL,
+    `brand_name` text COLLATE utf8mb4_unicode_ci NOT NULL,
+    `slogan` text COLLATE utf8mb4_unicode_ci NOT NULL,
+    `open_time` TIME NOT NULL,
+    `close_time` TIME NOT NULL,
+    `webshop_brand_id` int NOT NULL DEFAULT '1',
+    `about_adjustment_image_left` text COLLATE utf8mb4_unicode_ci NOT NULL,
+    `about_adjustment_image_right` text COLLATE utf8mb4_unicode_ci NOT NULL,
+    `email` text COLLATE utf8mb4_unicode_ci,
+    `address` text COLLATE utf8mb4_unicode_ci,
+    `phone_no` text COLLATE utf8mb4_unicode_ci,
+    `has_loyalty` tinyint(1) NOT NULL DEFAULT '0',
+    `outlet_select_text` text COLLATE utf8mb4_unicode_ci,
+    `show_logo` tinyint(1) NOT NULL DEFAULT '1',
+    `show_brand_name` tinyint(1) NOT NULL DEFAULT '1',
+    `show_main_screen_logo` tinyint(1) NOT NULL DEFAULT '1',
+    `created_at` TIMESTAMP NULL DEFAULT NULL,
+    `updated_at` TIMESTAMP NULL DEFAULT NULL,
+    PRIMARY KEY (`id`)
+) ENGINE = InnoDB AUTO_INCREMENT = 41 DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci

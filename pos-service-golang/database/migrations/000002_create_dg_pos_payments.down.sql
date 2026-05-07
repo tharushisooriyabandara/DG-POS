@@ -1,0 +1,1 @@
+DROP TABLE `dg_pos_payments`;

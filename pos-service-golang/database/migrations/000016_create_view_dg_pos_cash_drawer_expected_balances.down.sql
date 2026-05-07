@@ -1,0 +1,1 @@
+DROP VIEW IF EXISTS `dg_pos_cash_drawer_expected_balances`;

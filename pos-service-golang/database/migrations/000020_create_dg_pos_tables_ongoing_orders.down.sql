@@ -1,0 +1,1 @@
+DROP TABLE IF EXISTS `dg_pos_tables_ongoing_orders`;

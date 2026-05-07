@@ -1,0 +1,174 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <InterceptorsNamespaces>$(InterceptorsNamespaces);Microsoft.Extensions.Configuration.Binder.SourceGeneration</InterceptorsNamespaces>
+    <ApplicationIcon>Assets\appicon.ico</ApplicationIcon>
+    <PlatformTarget>x64</PlatformTarget>
+    <Prefer32Bit>false</Prefer32Bit>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <!-- Server GC for better memory management in long-running applications -->
+    <ServerGarbageCollection>true</ServerGarbageCollection>
+    <ConcurrentGarbageCollection>true</ConcurrentGarbageCollection>
+    <!-- Allow GC to use more memory to improve throughput -->
+    <RetainVMGarbageCollection>true</RetainVMGarbageCollection>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Images\OIP.jpg" />
+    <None Remove="Images\deliveroo.webp" />
+    <None Remove="Images\ubereats.webp" />
+    <None Remove="Images\webshop.jpg" />
+    <None Remove="Images\tableorder.webp" />
+    <None Remove="Images\dgpos.png" />
+  </ItemGroup>
+
+  
+
+  <!-- Exclude tool sources from main app compilation -->
+  <ItemGroup>
+    <Compile Remove="Tools\**\*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MahApps.Metro" Version="2.4.10" />
+    <PackageReference Include="MaterialDesignThemes" Version="4.9.0" />
+    <PackageReference Include="MaterialDesignColors" Version="2.1.4" />
+    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.3405.78" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="System.Drawing.Common" Version="9.0.6" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.12.1" />
+    <PackageReference Include="WpfAnimatedGif" Version="2.0.2" />
+    <PackageReference Include="System.Management" Version="9.0.6" />
+    <PackageReference Include="FirebaseAdmin" Version="2.4.0" />
+    <PackageReference Include="Google.Cloud.Firestore" Version="3.7.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="9.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="9.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="9.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="9.0.0" />
+  </ItemGroup>
+ 
+
+  <ItemGroup>
+    <Content Include="Source\sound.mp3">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>Always</CopyToPublishDirectory>
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="testdelivergate-firebase-adminsdk-key.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory Condition="'$(Configuration)'=='Release'">Never</CopyToPublishDirectory>
+      <CopyToPublishDirectory Condition="'$(Configuration)'!='Release'">PreserveNewest</CopyToPublishDirectory>
+    </None>
+    <None Include="delivergate-uk-firebase-adminsdk-key.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory Condition="'$(Configuration)'=='Release'">Never</CopyToPublishDirectory>
+      <CopyToPublishDirectory Condition="'$(Configuration)'!='Release'">PreserveNewest</CopyToPublishDirectory>
+    </None>
+    <None Include="google-maps-api-key.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory Condition="'$(Configuration)'=='Release'">Never</CopyToPublishDirectory>
+      <CopyToPublishDirectory Condition="'$(Configuration)'!='Release'">PreserveNewest</CopyToPublishDirectory>
+    </None>
+    <None Include="firebase-adminsdk.enc">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToPublishDirectory>Never</CopyToPublishDirectory>
+    </None>
+    <None Include="google-maps-api-key.enc">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToPublishDirectory>Never</CopyToPublishDirectory>
+    </None>
+    <None Include="appsettings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory Condition="'$(Configuration)'=='Release'">Never</CopyToPublishDirectory>
+      <CopyToPublishDirectory Condition="'$(Configuration)'!='Release'">PreserveNewest</CopyToPublishDirectory>
+    </None>
+    <None Include="appsettings.Development.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory Condition="'$(Configuration)'=='Release'">Never</CopyToPublishDirectory>
+      <CopyToPublishDirectory Condition="'$(Configuration)'!='Release'">PreserveNewest</CopyToPublishDirectory>
+    </None>
+    <None Include="appsettings.Production.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory Condition="'$(Configuration)'=='Release'">Never</CopyToPublishDirectory>
+      <CopyToPublishDirectory Condition="'$(Configuration)'!='Release'">PreserveNewest</CopyToPublishDirectory>
+    </None>
+    <None Include="appsettings.enc">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToPublishDirectory>Never</CopyToPublishDirectory>
+    </None>
+    <None Include="appsettings.Production.enc">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToPublishDirectory>Never</CopyToPublishDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Models\" />
+    <Folder Include="Assets\" />
+  </ItemGroup>
+
+  <!-- Generate application icon from remote PNG before build (safe no-op if offline) -->
+  <Target Name="GenerateAppIcon" BeforeTargets="BeforeBuild">
+    <PropertyGroup>
+      <_AssetsDir>$(MSBuildProjectDirectory)\Assets</_AssetsDir>
+      <_PngPath>$(_AssetsDir)\appicon.png</_PngPath>
+      <_IcoPath>$(_AssetsDir)\appicon.ico</_IcoPath>
+      <_IconSourceUrl>https://delivergate-logos.s3.eu-west-2.amazonaws.com/POSPNG.png</_IconSourceUrl>
+    </PropertyGroup>
+
+    <MakeDir Directories="$(_AssetsDir)" />
+
+    <!-- Download PNG icon (skip on error to not break build) -->
+    <Exec ContinueOnError="true" Command="powershell -NoProfile -ExecutionPolicy Bypass -Command &quot;try { Invoke-WebRequest '$(_IconSourceUrl)' -OutFile '$(_PngPath)' -UseBasicParsing } catch { }&quot;" />
+
+    <!-- Convert PNG to ICO using PowerShell and System.Drawing (single 256x256) -->
+    <Exec ContinueOnError="true" Command="powershell -NoProfile -ExecutionPolicy Bypass -Command &quot;try { if (Test-Path '$(_PngPath)') { Add-Type -AssemblyName System.Drawing; $img=[System.Drawing.Image]::FromFile('$(_PngPath)'); $size=New-Object System.Drawing.Size(256,256); $bmp=New-Object System.Drawing.Bitmap($img,$size); $h=$bmp.GetHicon(); $ico=[System.Drawing.Icon]::FromHandle($h); $fs=[System.IO.File]::Open('$(_IcoPath)',[System.IO.FileMode]::Create); $ico.Save($fs); $fs.Close(); $ico.Dispose(); $bmp.Dispose(); $img.Dispose() } } catch { }&quot;" />
+
+    <!-- Fallback: create a simple placeholder ICO if download/conversion failed -->
+    <Exec ContinueOnError="true" Command="powershell -NoProfile -ExecutionPolicy Bypass -Command &quot;try { if (-not (Test-Path '$(_IcoPath)')) { Add-Type -AssemblyName System.Drawing; $bmp=New-Object System.Drawing.Bitmap 256,256; $g=[System.Drawing.Graphics]::FromImage($bmp); $g.Clear([System.Drawing.Color]::FromArgb(255,0,122,204)); $g.Dispose(); $h=$bmp.GetHicon(); $ico=[System.Drawing.Icon]::FromHandle($h); $fs=[System.IO.File]::Open('$(_IcoPath)',[System.IO.FileMode]::Create); $ico.Save($fs); $fs.Close(); $ico.Dispose(); $bmp.Dispose() } } catch { }&quot;" />
+  </Target>
+
+  <Target Name="EncryptSecretsBeforePublish" BeforeTargets="Publish" Condition="'$(Configuration)'=='Release'">
+    <PropertyGroup>
+      <EnvironmentName Condition="'$(EnvironmentName)'==''">Production</EnvironmentName>
+    </PropertyGroup>
+
+    <!-- Base appsettings (always) -->
+    <Exec Command="dotnet run --project &quot;$(MSBuildProjectDirectory)\Tools\PosEncryptor\PosEncryptor.csproj&quot; -- &quot;$(MSBuildProjectDirectory)\appsettings.json&quot; &quot;$(MSBuildProjectDirectory)\appsettings.enc&quot; keyfile.txt" />
+
+    <!-- Environment-specific appsettings -->
+    <Exec Condition="'$(EnvironmentName)'=='Production'" Command="dotnet run --project &quot;$(MSBuildProjectDirectory)\Tools\PosEncryptor\PosEncryptor.csproj&quot; -- &quot;$(MSBuildProjectDirectory)\appsettings.Production.json&quot; &quot;$(MSBuildProjectDirectory)\appsettings.Production.enc&quot; keyfile.txt" />
+    <Exec Condition="'$(EnvironmentName)'=='Development'" Command="dotnet run --project &quot;$(MSBuildProjectDirectory)\Tools\PosEncryptor\PosEncryptor.csproj&quot; -- &quot;$(MSBuildProjectDirectory)\appsettings.Development.json&quot; &quot;$(MSBuildProjectDirectory)\appsettings.Development.enc&quot; keyfile.txt" />
+
+    <!-- Google Maps API key (always) -->
+    <Exec Command="dotnet run --project &quot;$(MSBuildProjectDirectory)\Tools\PosEncryptor\PosEncryptor.csproj&quot; -- &quot;$(MSBuildProjectDirectory)\google-maps-api-key.txt&quot; &quot;$(MSBuildProjectDirectory)\google-maps-api-key.enc&quot; keyfile.txt" />
+
+    <!-- Firebase admin SDK key (environment-specific) -->
+    <Exec Condition="'$(EnvironmentName)'=='Production'" Command="dotnet run --project &quot;$(MSBuildProjectDirectory)\Tools\PosEncryptor\PosEncryptor.csproj&quot; -- &quot;$(MSBuildProjectDirectory)\delivergate-uk-firebase-adminsdk-key.json&quot; &quot;$(MSBuildProjectDirectory)\firebase-adminsdk.enc&quot; keyfile.txt" />
+    <Exec Condition="'$(EnvironmentName)'!='Production'" Command="dotnet run --project &quot;$(MSBuildProjectDirectory)\Tools\PosEncryptor\PosEncryptor.csproj&quot; -- &quot;$(MSBuildProjectDirectory)\testdelivergate-firebase-adminsdk-key.json&quot; &quot;$(MSBuildProjectDirectory)\firebase-adminsdk.enc&quot; keyfile.txt" />
+
+    <!-- Remove stale env-specific enc files from publish folder -->
+    <ItemGroup>
+      <_StaleEncFiles Include="$(PublishDir)\appsettings.*.enc" />
+    </ItemGroup>
+    <Delete Files="@(_StaleEncFiles)" />
+
+    <!-- Copy only the correct enc files for this environment -->
+    <ItemGroup>
+      <_EncFiles Include="$(MSBuildProjectDirectory)\appsettings.enc" />
+      <_EncFiles Condition="'$(EnvironmentName)'=='Production'" Include="$(MSBuildProjectDirectory)\appsettings.Production.enc" />
+      <_EncFiles Condition="'$(EnvironmentName)'=='Development'" Include="$(MSBuildProjectDirectory)\appsettings.Development.enc" />
+      <_EncFiles Include="$(MSBuildProjectDirectory)\google-maps-api-key.enc;$(MSBuildProjectDirectory)\firebase-adminsdk.enc" />
+    </ItemGroup>
+    <Copy SourceFiles="@(_EncFiles)" DestinationFolder="$(PublishDir)" SkipUnchangedFiles="true" Condition="Exists('%(FullPath)')" />
+  </Target>
+
+</Project>

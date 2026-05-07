@@ -1,0 +1,8 @@
+CREATE TABLE IF NOT EXISTS `dg_pos_tables_ongoing_orders` (
+    `id` BIGINT unsigned NOT NULL AUTO_INCREMENT,
+    `table_id` bigint UNSIGNED NOT NULL,
+    `order_id` bigint UNSIGNED NOT NULL,
+    `created_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;

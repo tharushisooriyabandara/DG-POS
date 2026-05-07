@@ -1,0 +1,55 @@
+<Window x:Class="POS_UI.View.DateRangeWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:converters="clr-namespace:POS_UI.Converters"
+        Title="Date Range" Height="200" Width="600" WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize" WindowStyle="None" ShowInTaskbar="False" Background="White">
+    <Window.Resources>
+        <converters:CountryToLanguageExtension x:Key="CountryToLanguageExtension"/>
+    </Window.Resources>
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <!-- Custom header with title (left) and close (right) -->
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock Text="{Binding Title}" FontSize="18" FontWeight="Bold" VerticalAlignment="Center"/>
+            <Button Grid.Column="1" Content="✕" Width="28" Height="28" Margin="0,0,0,0" VerticalAlignment="Top" HorizontalAlignment="Right"
+                    Background="Transparent" BorderThickness="0" FontSize="14" Click="OnClose"/>
+        </Grid>
+        <Grid Grid.Row="1" Margin="0,8,0,0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            <!-- One-line From / To selectors -->
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,0">
+                <Border Background="Transparent" Padding="6" PreviewMouseLeftButtonDown="OnFromAreaMouseDown" TouchDown="OnFromAreaTouchDown">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="From:" VerticalAlignment="Center" Margin="0,0,8,0" FontSize="16"/>
+                        <DatePicker x:Name="FromPicker" SelectedDate="{Binding FromDate}" Width="220" FontSize="16"
+                        Language="{converters:CountryToLanguageExtension}"/>
+                    </StackPanel>
+                </Border>
+                <Border Background="Transparent" Padding="6" Margin="16,0,0,0" PreviewMouseLeftButtonDown="OnToAreaMouseDown" TouchDown="OnToAreaTouchDown">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="To:" VerticalAlignment="Center" Margin="0,0,8,0" FontSize="16"/>
+                        <DatePicker x:Name="ToPicker" SelectedDate="{Binding ToDate}" Width="220" FontSize="16"
+                        Language="{converters:CountryToLanguageExtension}"/>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </Grid>
+        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,0,0">
+            <Button Content="Cancel" Margin="0,0,8,0" IsCancel="True" Click="OnCancel"/>
+            <Button Content="OK" Background="#1976D2" Foreground="White" IsDefault="True" Click="OnOk"/>
+        </StackPanel>
+    </Grid>
+</Window>
+
+

@@ -1,0 +1,19 @@
+<UserControl x:Class="POS_UI.View.Controls.LoadingIndicator"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
+             Height="Auto" Width="Auto">
+    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+        <mah:ProgressRing Width="{Binding ProgressRingSize, RelativeSource={RelativeSource AncestorType=UserControl}}" 
+                          Height="{Binding ProgressRingSize, RelativeSource={RelativeSource AncestorType=UserControl}}" 
+                          IsActive="True" 
+                          Foreground="#1976D2"/>
+        <!--<TextBlock Text="{Binding LoadingText, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                   FontSize="{Binding TextSize, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                   Foreground="#666"
+                   HorizontalAlignment="Center"
+                   Margin="0,8,0,0"/>
+        -->
+    </StackPanel>
+</UserControl> 

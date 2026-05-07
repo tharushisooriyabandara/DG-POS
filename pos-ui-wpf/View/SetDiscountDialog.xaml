@@ -1,0 +1,96 @@
+<UserControl x:Class="POS_UI.View.SetDiscountDialog"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             xmlns:services="clr-namespace:POS_UI.Services"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             d:DesignHeight="300" d:DesignWidth="400">
+    <Border Background="White" CornerRadius="16" Padding="20" MinWidth="300">
+        <StackPanel>
+            <DockPanel>
+                <TextBlock Text="Set Discount" FontWeight="Bold" FontSize="26" Margin="0,0,0,8"/>
+                <Button DockPanel.Dock="Right" Command="{x:Static materialDesign:DialogHost.CloseDialogCommand}" HorizontalAlignment="Right" VerticalAlignment="Top" Style="{StaticResource MaterialDesignToolButton}" Background="Transparent" BorderBrush="Transparent" Width="24" Height="24" Margin="0,-12,-8,0">
+                    <materialDesign:PackIcon Kind="Close" Width="16" Height="16"/>
+                </Button>
+            </DockPanel>
+            <TabControl>
+                <TabControl.ItemContainerStyle>
+        <Style TargetType="TabItem">
+                         <Setter Property="Padding" Value="-6,0"/>
+            <Setter Property="MinWidth" Value="0"/>
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="FontWeight" Value="Medium"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TabItem">
+                        <Grid>
+                            <Border x:Name="Border" Background="Transparent" BorderBrush="Transparent" BorderThickness="0,0,0,2">
+                                <ContentPresenter 
+                                    ContentSource="Header"
+                                    RecognizesAccessKey="True"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                                                         Margin="-8,4"/>
+                            </Border>
+                            <Border x:Name="Indicator" Background="#1976D2" Height="2" VerticalAlignment="Bottom" 
+                                    Visibility="Collapsed" HorizontalAlignment="Center" Width="Auto" MinWidth="20"/>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="Indicator" Property="Visibility" Value="Visible"/>
+                                <Setter TargetName="Border" Property="BorderBrush" Value="#1976D2"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </TabControl.ItemContainerStyle>
+                <TabItem Header="By Percentage">
+                    <StackPanel>
+                        <TextBlock Text="Quick Discount" FontWeight="SemiBold" FontSize="16" Margin="0,10,0,8"/>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,0,0,16">
+                            <Button Content="10%" Width="80" Height="40" Margin="0,0,8,0" FontSize="16" Tag="10" Click="QuickDiscount_Click"/>
+                            <Button Content="20%" Width="80" Height="40" Margin="0,0,8,0" FontSize="16" Tag="20" Click="QuickDiscount_Click"/>
+                            <Button Content="30%" Width="80" Height="40" FontSize="16" Tag="30" Click="QuickDiscount_Click"/>
+                        </StackPanel>
+                        <TextBox x:Name="PercentTextBox" Width="320" Height="40" FontSize="16" VerticalAlignment="Center" VerticalContentAlignment="Center"
+                                 materialDesign:HintAssist.Hint="Enter discount percentage"
+                                 Padding="8,0,0,2"
+                                 BorderBrush="#D1D5DB" BorderThickness="1" Margin="0,0,0,24"/>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,20,0,0">
+                            <Button Content="Cancel" Width="100" Height="36" Style="{StaticResource MaterialDesignOutlinedButton}" Click="CancelButton_Click" Margin="0,0,10,0"/>
+                            <Button Content="Save" Width="100" Height="36" Background="#1976D2" Foreground="White" FontWeight="Bold" Click="SavePercentButton_Click"/>
+                        </StackPanel>
+                    </StackPanel>
+                </TabItem>
+                <TabItem Header="By Amount" >
+                    <StackPanel>
+                        <TextBlock Text="Quick Discount" FontWeight="SemiBold" FontSize="16" Margin="0,10,0,8"/>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,0,0,16">
+                            <Button Content="{Binding Tag, RelativeSource={RelativeSource Self}, Converter={StaticResource CurrencyFormatConverter}}" Height="40" Margin="0,0,8,0" FontSize="16" Tag="10" Click="QuickAmount_Click"/>
+                            <Button Content="{Binding Tag, RelativeSource={RelativeSource Self}, Converter={StaticResource CurrencyFormatConverter}}" Height="40" Margin="0,0,8,0" FontSize="16" Tag="20" Click="QuickAmount_Click"/>
+                            <Button Content="{Binding Tag, RelativeSource={RelativeSource Self}, Converter={StaticResource CurrencyFormatConverter}}" Height="40" FontSize="16" Tag="30" Click="QuickAmount_Click"/>
+                        </StackPanel>
+                        <Border BorderBrush="#D1D5DB" BorderThickness="1">
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,0,0,4"  >
+                             <TextBlock Text="{Binding Source={x:Static services:GlobalDataService.Instance}, Path=ShopDetails.Currency}" Padding="2,8,2,6"
+                                      FontSize="16" Height="40" FontWeight="SemiBold" VerticalAlignment="Center" HorizontalAlignment="Center" TextAlignment="Center" Foreground="#374151" Width="20"/>
+                            <TextBox x:Name="AmountTextBox" Width="290" Height="40" FontSize="16" VerticalAlignment="Center" VerticalContentAlignment="Center"
+                                     materialDesign:HintAssist.Hint="Enter discount amount"
+                                     Padding="8,0,0,2"
+                                     BorderThickness="0" Margin="0,0,8,0"/>
+                        </StackPanel>
+                        </Border>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,38,0,0">
+                            <Button Content="Cancel" Width="100" Height="36" Style="{StaticResource MaterialDesignOutlinedButton}" Click="CancelButton_Click" Margin="0,0,10,0"/>
+                            <Button Content="Save" Width="100" Height="36" Background="#1976D2" Foreground="White" FontWeight="Bold" Click="SaveAmountButton_Click"/>
+                        </StackPanel>
+                    </StackPanel>
+                </TabItem>
+            </TabControl>
+        </StackPanel>
+    </Border>
+</UserControl> 

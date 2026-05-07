@@ -1,0 +1,22 @@
+CREATE TABLE IF NOT EXISTS `dg_pos_order_location` (
+    `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT,
+    `order_id` int NOT NULL,
+    `first_name` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+    `last_name` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+    `email` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+    `country_code` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+    `country` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+    `phone` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+    `flat_no` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+    `house_no` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+    `address_line_1` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+    `address_line_2` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+    `city` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+    `landmark` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+    `postcode` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+    `latitude` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+    `longitude` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+    `created_at` TIMESTAMP NULL DEFAULT NULL,
+    `updated_at` TIMESTAMP NULL DEFAULT NULL,
+    PRIMARY KEY (`id`)
+)

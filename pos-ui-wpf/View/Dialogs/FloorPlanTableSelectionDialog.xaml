@@ -1,0 +1,124 @@
+<view:OptimizedDialogBase x:Class="POS_UI.View.Dialogs.FloorPlanTableSelectionDialog"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="clr-namespace:POS_UI.View"
+             xmlns:view="clr-namespace:POS_UI.View"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             mc:Ignorable="d" d:DesignHeight="480" d:DesignWidth="520">
+    <view:OptimizedDialogBase.Resources>
+        <Style x:Key="FloorPlanPickTableButtonStyle" TargetType="Button">
+            <Setter Property="Width" Value="60"/>
+            <Setter Property="Height" Value="60"/>
+            <Setter Property="Margin" Value="10"/>
+            <Setter Property="FontSize" Value="20"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Background" Value="#F5F5F5"/>
+            <Setter Property="Foreground" Value="Black"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="8">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <!-- Already on a floor plan (and not unavailable): light grey -->
+                            <MultiDataTrigger>
+                                <MultiDataTrigger.Conditions>
+                                    <Condition Binding="{Binding IsAlreadyOnFloorPlan}" Value="True"/>
+                                    <Condition Binding="{Binding IsUnavailable}" Value="False"/>
+                                </MultiDataTrigger.Conditions>
+                                <Setter TargetName="border" Property="Background" Value="#E0E0E0"/>
+                                <Setter TargetName="border" Property="Opacity" Value="1"/>
+                                <Setter Property="Foreground" Value="#555555"/>
+                            </MultiDataTrigger>
+                            <!-- Unavailable: dark grey (after "already used" so it wins if both) -->
+                            <DataTrigger Binding="{Binding IsUnavailable}" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#9E9E9E"/>
+                                <Setter TargetName="border" Property="Opacity" Value="0.85"/>
+                                <Setter Property="Foreground" Value="#EEEEEE"/>
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                                <Setter TargetName="border" Property="BorderBrush" Value="#2979FF"/>
+                                <Setter TargetName="border" Property="BorderThickness" Value="2"/>
+                                <Setter TargetName="border" Property="Effect">
+                                    <Setter.Value>
+                                        <DropShadowEffect Color="#2979FF" BlurRadius="14" ShadowDepth="0" Opacity="0.72"/>
+                                    </Setter.Value>
+                                </Setter>
+                            </DataTrigger>
+                            <MultiDataTrigger>
+                                <MultiDataTrigger.Conditions>
+                                    <Condition Binding="{Binding IsPickEnabled}" Value="True"/>
+                                    <Condition Binding="{Binding IsMouseOver, RelativeSource={RelativeSource Self}}" Value="True"/>
+                                </MultiDataTrigger.Conditions>
+                                <Setter TargetName="border" Property="Background" Value="#E3F2FD"/>
+                                <Setter TargetName="border" Property="BorderBrush" Value="#1976D2"/>
+                                <Setter Property="Foreground" Value="#1976D2"/>
+                            </MultiDataTrigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </view:OptimizedDialogBase.Resources>
+    <StackPanel>
+        <StackPanel Margin="15,10,10,8">
+            <TextBlock Text="Select Table" FontWeight="Bold" FontSize="18" HorizontalAlignment="Center"/>
+            <TextBlock Text="Tap tables to select/deselect table(s), then add selected to this floor plan" FontSize="13" Foreground="#666"
+                       HorizontalAlignment="Center" Margin="0,8,0,0" TextAlignment="Center" TextWrapping="Wrap" MaxWidth="420"/>
+        </StackPanel>
+        <ItemsControl ItemsSource="{Binding Rows}" Width="450" HorizontalAlignment="Center" HorizontalContentAlignment="Center" Margin="10,0,10,0">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <WrapPanel HorizontalAlignment="Center"/>
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <Button Style="{StaticResource FloorPlanPickTableButtonStyle}"
+                            Content="{Binding Table.Name}"
+                            Command="{Binding DataContext.ToggleRowSelectionCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                            CommandParameter="{Binding}"
+                            IsEnabled="{Binding IsPickEnabled}"/>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+
+        <Border Background="#FAFAFA" CornerRadius="8" Padding="12,8" Margin="16,12,16,4" HorizontalAlignment="Center" MaxWidth="460">
+            <WrapPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                <StackPanel Orientation="Horizontal" Margin="0,0,16,6">
+                    <Border Width="18" Height="18" CornerRadius="4" Background="#F5F5F5" BorderBrush="#D0D0D0" BorderThickness="1" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                    <TextBlock Text="Available" VerticalAlignment="Center" Foreground="#555" FontSize="12"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="0,0,16,6">
+                    <Border Width="18" Height="18" CornerRadius="4" Background="#E0E0E0" BorderBrush="#BDBDBD" BorderThickness="1" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                    <TextBlock Text="Already used on a floor plan" VerticalAlignment="Center" Foreground="#555" FontSize="12" TextWrapping="Wrap" MaxWidth="220"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                    <Border Width="18" Height="18" CornerRadius="4" Background="#9E9E9E" BorderBrush="#757575" BorderThickness="1" VerticalAlignment="Center" Margin="0,0,8,0" Opacity="0.9"/>
+                    <TextBlock Text="Unavailable" VerticalAlignment="Center" Foreground="#555" FontSize="12"/>
+                </StackPanel>
+            </WrapPanel>
+        </Border>
+
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="20,12,20,12">
+            <Button Content="Cancel" Width="120" Height="40" Margin="0,0,8,0"
+                    Style="{StaticResource MaterialDesignOutlinedButton}"
+                    Command="{Binding CancelCommand}"/>
+            <Button Content="Select all tables" MinWidth="140" Height="40" Margin="0,0,8,0" Padding="12,0"
+                    Style="{StaticResource MaterialDesignOutlinedButton}"
+                    Command="{Binding SelectAllPickableCommand}"/>
+            <Button Content="Add selected" MinWidth="120" Height="40" Padding="12,0"
+                    Style="{StaticResource MaterialDesignRaisedButton}"
+                    Command="{Binding SaveCommand}"/>
+        </StackPanel>
+    </StackPanel>
+</view:OptimizedDialogBase>

@@ -1,0 +1,43 @@
+CREATE TABLE `order_commission` (
+    `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+    `order_tmp_id` bigint DEFAULT NULL,
+    `order_id` bigint NOT NULL,
+    `commission` decimal(8, 2) NOT NULL DEFAULT '0.00',
+    `reference` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+    `report_id` int DEFAULT NULL,
+    `status` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'PENDING',
+    `created_at` timestamp NULL DEFAULT NULL,
+    `updated_at` timestamp NULL DEFAULT NULL,
+    PRIMARY KEY (`id`)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
+
+CREATE TABLE `shop_brand_details` (
+    `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+    `shop_id` int unsigned NOT NULL,
+    `webshop_brand_id` int unsigned NOT NULL DEFAULT '1',
+    `order_commission` decimal(8, 2) NOT NULL DEFAULT '0.00',
+    `delivergate_account` tinyint(1) NOT NULL DEFAULT '0',
+    `transfer_destination` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+    `google_place_id` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+    `street_no` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+    `route` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+    `locality` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+    `administrative_area_level_1` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+    `administrative_area_level_1_short` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+    `administrative_area_level_2` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+    `administrative_area_level_2_short` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+    `country` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+    `country_short` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+    `postal_code` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+    `formatted_address` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+    `formatted_phone_number` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+    `note` text COLLATE utf8mb4_unicode_ci,
+    `rate_count` int NOT NULL DEFAULT '0',
+    `rate_average` decimal(8, 2) NOT NULL DEFAULT '0.00',
+    `show_note` tinyint(1) NOT NULL DEFAULT '0',
+    `contact_number` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+    `email` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+    `created_at` timestamp NULL DEFAULT NULL,
+    `updated_at` timestamp NULL DEFAULT NULL,
+    PRIMARY KEY (`id`)
+) ENGINE = InnoDB AUTO_INCREMENT = 4 DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;

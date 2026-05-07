@@ -1,0 +1,20 @@
+CREATE TABLE `order_items` (
+    `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+    `order_id` int NOT NULL,
+    `item_id` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+    `quantity` float(8, 2) NOT NULL,
+    `price_per_item` int NOT NULL DEFAULT '0',
+    `total` int NOT NULL DEFAULT '0',
+    `original_price` int NOT NULL DEFAULT '0',
+    `is_sale` tinyint(1) NOT NULL DEFAULT '0',
+    `discount_amount` int NOT NULL DEFAULT '0',
+    `status` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+    `created_at` timestamp NULL DEFAULT NULL,
+    `updated_at` timestamp NULL DEFAULT NULL,
+    `item_name` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+    `category_name` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+    `modifiers` text COLLATE utf8mb4_unicode_ci,
+    `tax` int NOT NULL DEFAULT '0',
+    `note` text COLLATE utf8mb4_unicode_ci,
+    PRIMARY KEY (`id`)
+) ENGINE = InnoDB AUTO_INCREMENT = 26282 DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci

@@ -1,0 +1,21 @@
+CREATE TABLE `dg_pos_cash_drawer_sessions` (
+    `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT,
+    `cash_drawer_id` bigint UNSIGNED NOT NULL,
+    `session_started_user_id` bigint UNSIGNED NOT NULL,
+    `session_ended_user_id` bigint UNSIGNED,
+    `opened_at` TIMESTAMP NOT NULL,
+    `opening_balance` INT NOT NULL DEFAULT 0,
+    `closed_at` TIMESTAMP NULL DEFAULT NULL,
+    `closing_balance_counted` INT DEFAULT 0,
+    `closing_balance_expected` INT DEFAULT 0,
+    `difference` INT DEFAULT 0,
+    `total_in_amount` INT DEFAULT 0,
+    `total_out_amount` INT DEFAULT 0,
+    `total_sales_amount` INT DEFAULT 0,
+    `total_other_sales_amount` INT DEFAULT 0,
+    `total_refund_amount` INT DEFAULT 0,
+    `status` VARCHAR(191) NOT NULL DEFAULT 'OPEN',
+    `created_at` TIMESTAMP NULL DEFAULT NULL,
+    `updated_at` TIMESTAMP NULL DEFAULT NULL,
+    PRIMARY KEY (`id`)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;

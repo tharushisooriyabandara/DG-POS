@@ -1,0 +1,1 @@
+DROP TABLE `dg_pos_order_status_timestamps`;

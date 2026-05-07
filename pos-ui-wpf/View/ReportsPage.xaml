@@ -1,0 +1,1206 @@
+<Page x:Class="POS_UI.View.ReportsPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+      xmlns:local="clr-namespace:POS_UI.View"
+      xmlns:converters="clr-namespace:POS_UI.Converters"
+      xmlns:vm="clr-namespace:POS_UI.ViewModels"
+      xmlns:controls="clr-namespace:POS_UI.View.Controls"
+      xmlns:controls2="clr-namespace:POS_UI.View.Controls"
+      xmlns:sys="clr-namespace:System;assembly=mscorlib"
+      mc:Ignorable="d" 
+      xmlns:local2="clr-namespace:POS_UI"
+      d:DesignHeight="800" d:DesignWidth="1200"
+      Title="Reports Page">
+
+    <Page.Resources>
+        <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+        <converters:CollectionToVisibilityConverter x:Key="CollectionToVisibilityConverter"/>
+        <converters:InvertCollectionToVisibilityConverter x:Key="InvertCollectionToVisibilityConverter"/>
+        <converters:InvertBooleanToVisibilityConverter x:Key="InvertBooleanToVisibilityConverter"/>
+        <converters:StringNotEmptyToVisibilityConverter x:Key="StringNotEmptyToVisibilityConverter"/>
+        <converters:CountryToLanguageConverter x:Key="CountryToLanguageConverter"/>
+        <converters:CurrencyFormatConverter x:Key="CurrencyFormatConverter"/>
+        <converters:CountryBasedDateConverter x:Key="CountryBasedDateConverter"/>
+        <converters:InvertBooleanConverter x:Key="InvertBooleanConverter"/>
+        <converters:CountryBasedDateTimeConverter x:Key="CountryBasedDateTimeConverter"/>
+        <converters:StringToVisibilityConverter x:Key="StringToVisibilityConverter"/>
+        <converters:EmptyStringToDashConverter x:Key="EmptyStringToDashConverter"/>
+        <vm:SettingsViewModel x:Key="ShiftsSettingsVM"/>
+        <!-- Shared label style: constrain first line width; wrap to second line for overflow -->
+        <Style x:Key="TwoLineMetricLabel" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="18"/>
+            <Setter Property="HorizontalAlignment" Value="Left"/>
+            <Setter Property="TextWrapping" Value="Wrap"/>
+            <Setter Property="Width" Value="150"/>
+        </Style>
+    </Page.Resources>
+
+    <Page.DataContext>
+        <vm:ReportsViewModel/>
+    </Page.DataContext>
+
+    <materialDesign:DialogHost Identifier="RootDialog" Style="{StaticResource MaterialDesignEmbeddedDialogHost}">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="130"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <!-- Sidebar Placeholder -->
+            <local2:Sidebar x:Name="SidebarControl" Grid.Column="0"/>
+            <Grid Grid.Column="1" Background="#F5F5F5">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="91*"/>
+                    <RowDefinition Height="647*"/>
+                </Grid.RowDefinitions>
+
+                <!-- Header -->
+                <Border Grid.Row="0" Background="Transparent" Padding="0,0,20,0" Margin="0,0,0,0">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                            <StackPanel Orientation="Horizontal" Margin="10,5,10,0">
+                                <Border Background="#2196F3" Width="15" Height="60" CornerRadius="5"/>
+                                <StackPanel Orientation="Vertical" Margin="10">
+                                    <TextBlock Text="Reports" FontSize="22" FontWeight="Bold" Margin="0,0,0,2"/>
+                                    <TextBlock Text="Manage Order Reports" FontSize="15"/>
+                                    <!--<Button Content="Refresh" Command="{Binding RefreshTablesCommand}" Width="80" Height="24" Margin="20,0,0,0" Background="#1976D2" Foreground="White" FontWeight="Bold"/>-->
+                                </StackPanel>
+                            </StackPanel>
+                        </StackPanel>
+
+                        <!-- Right header actions -->
+                    </Grid>
+                </Border>
+
+                <!-- Main Content -->
+                <Grid Grid.Row="1" Margin="10,10,10,0" Grid.RowSpan="2">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Filters Bar -->
+                    <!--<Border Grid.Row="0" Background="White" CornerRadius="8" Padding="10" Margin="0,0,0,12">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,12,0">
+                            <TextBlock Text="From:" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                            <DatePicker SelectedDate="{Binding FromDate}"/>
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,12,0">
+                            <TextBlock Text="To:" VerticalAlignment="Center" Margin="0,0,6,0" />
+                            <DatePicker SelectedDate="{Binding ToDate}"/>
+                        </StackPanel>
+                        <Button Grid.Column="2" Content="Generate Report" Command="{Binding GenerateReportCommand}" 
+                                Background="#1976D2" Foreground="White" Padding="14,8" Margin="0,0,12,0" Width="140"/>
+                        <Button Grid.Column="3" Content="Clear" Command="{Binding ClearDatesCommand}"
+                                Background="#EEEEEE" Foreground="#333" Padding="14,8" Width="90"/>
+                        -->
+                    <!-- Export Button -->
+                    <!--<Button Grid.Column="4" Content="Export to Excel" Command="{Binding ExportToExcelCommand}"
+                                Background="#4CAF50" Foreground="White" Padding="14,8" Width="120"
+                                HorizontalAlignment="Right"/>
+                    </Grid>
+                </Border>-->
+
+                    <!-- Tab Control -->
+                    <Border Grid.Row="1" Background="White" CornerRadius="8">
+                        <TabControl SelectionChanged="TabControl_SelectionChanged">
+
+                            <!-- Shifts Tab -->
+                            <TabItem Header="Shifts">
+                                <TabItem.HeaderTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="Shifts" FontWeight="Bold" FontSize="20"/>
+                                    </DataTemplate>
+                                </TabItem.HeaderTemplate>
+                                <Grid DataContext="{StaticResource ShiftsSettingsVM}">
+                                    <Border>
+                               <StackPanel>
+                        <TabControl>
+                            <TabItem Header="General">
+                                <TabItem.HeaderTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="General" FontWeight="Bold" FontSize="19"/>
+                                    </DataTemplate>
+                                </TabItem.HeaderTemplate>
+                                <StackPanel Margin="12">
+                                    <WrapPanel Margin="0,8,0,0">
+                                        <Button Content="Start Shift" FontSize="17"
+                                                Width="220" Height="50"
+                                                Style="{StaticResource MaterialDesignRaisedButton}"
+                                                Margin="0,0,12,10"
+                                                Visibility="{Binding IsAdmin, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter=True}"
+                                                IsEnabled="{Binding IsStartShiftEnabled}"
+                                                Command="{Binding StartShiftCommand}"/>
+                                        <Button Content="End Shift" FontSize="17"
+                                                Width="220" Height="50"
+                                                Style="{StaticResource MaterialDesignRaisedButton}"
+                                                Margin="0,0,12,10"
+                                                Visibility="{Binding IsAdmin, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter=True}"
+                                                IsEnabled="{Binding HasActiveCashDrawerSession}"
+                                                Command="{Binding OpenEndShiftDialogCommand}"/>
+                                        <Button Content="Cash In" FontSize="17"
+                                                Width="220" Height="50"
+                                                Style="{StaticResource MaterialDesignRaisedButton}"
+                                                Margin="0,0,12,10"
+                                                Command="{Binding OpenCashInDialogCommand}"
+                                                IsEnabled="{Binding CanCashIn}"/>
+                                        <Button Content="Cash Out" FontSize="17"
+                                                Width="220" Height="50"
+                                                Style="{StaticResource MaterialDesignRaisedButton}"
+                                                Margin="0,0,12,10"
+                                                Command="{Binding OpenCashOutDialogCommand}"
+                                                IsEnabled="{Binding CanCashOut}"/>
+                                    </WrapPanel>
+                                    <TextBlock Text="Cash Drawer Balance" FontWeight="SemiBold" FontSize="16" Margin="0,10,0,6"/>
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                        <Border Background="#FFFFFF" Width="420" HorizontalAlignment="Left" CornerRadius="10" Padding="14" BorderBrush="#E5E7EB" BorderThickness="1">
+                                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                                
+                                                <TextBlock Margin="10,0,0,0" FontSize="22" FontWeight="Bold"
+                                                           Text="{Binding ActiveCashDrawerSession.ClosingBalanceExpected, Converter={StaticResource CurrencyFormatConverter}}"/>
+                                            </StackPanel>
+                                        </Border>
+                                        <Button Content="X-Report" FontSize="16" Width="120" Height="50" Margin="12,0,0,0"
+                                                Style="{StaticResource MaterialDesignRaisedButton}"
+                                                Click="XReportButton_Click"/>
+                                    </StackPanel>
+                                    <StackPanel Visibility="{Binding IsAdmin, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter=True}">
+                                        <Grid>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto"/>
+                                            </Grid.RowDefinitions>
+                                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                            <TextBlock Text="Current Shift" FontWeight="SemiBold" FontSize="16" Margin="0,10,0,6"/>
+                                            <TextBlock Text="{Binding ActiveCashDrawerSession.Id,StringFormat='ID : {0}'}" FontWeight="SemiBold" FontSize="16" Margin="8,10,0,6"/>
+                                            </StackPanel>
+                                            <Border Grid.Row="1" Visibility="{Binding HasActiveCashDrawerSession, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                                    Background="#FFFFFF" CornerRadius="10" Padding="14" BorderBrush="#E5E7EB" BorderThickness="1" Margin="0,6,0,0">
+                                                <Grid>
+                                                    <Grid.RowDefinitions>
+                                                        <RowDefinition Height="72"/>
+                                                        <RowDefinition Height="72"/>
+                                                        <RowDefinition Height="72"/>
+                                                    </Grid.RowDefinitions>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                    </Grid.ColumnDefinitions>
+
+                                                    <!-- Row 0 -->
+                                                    <StackPanel Grid.Row="0" Grid.Column="1">
+                                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                                            <materialDesign:PackIcon Kind="ClockOutline" Width="22" Height="22" Margin="0,6,0,0" Foreground="#6B7280"/>
+                                                                <StackPanel Orientation="Vertical">
+                                                                    <TextBlock Text="Opened At" Margin="6,0,0,0" FontWeight="SemiBold" FontSize="17"/>
+                                                                    <TextBlock Text="{Binding ActiveCashDrawerSession.OpenedAt, Converter={StaticResource CountryBasedDateConverter}}" FontSize="17" Margin="6,2,0,6" Foreground="#111827"/>
+                                                                </StackPanel>
+                                                        </StackPanel>
+                                                            
+                                                    </StackPanel>
+                                                    <!--<StackPanel Grid.Row="0" Grid.Column="1">
+                                                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                                                <materialDesign:PackIcon Kind="Wallet" Width="22" Height="22" Margin="0,6,0,0" Foreground="#6B7280"/>
+                                                                <StackPanel Orientation="Vertical">
+                                                                    <TextBlock Text="Opening Balance" Margin="6,0,0,0" FontWeight="SemiBold" FontSize="17"/>
+                                                                    <TextBlock Text="{Binding ActiveCashDrawerSession.OpeningBalance, StringFormat=Rs {0:N2}}" FontSize="17" Margin="6,2,0,0"/>
+                                                                </StackPanel>
+                                                            </StackPanel>
+                                                            
+                                                    </StackPanel>-->
+                                                    <StackPanel Grid.Row="0" Grid.Column="0">
+                                                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                                                <materialDesign:PackIcon Kind="Account" Width="22" Height="22" Margin="0,6,0,0" Foreground="#6B7280"/>
+                                                                <StackPanel Orientation="Vertical">
+                                                                    <TextBlock Text="Shift Started By" Margin="6,0,0,0" FontWeight="SemiBold" FontSize="17"/>
+                                                                    <TextBlock Text="{Binding ActiveCashDrawerSession.SessionStartedUser}" Margin="6,2,0,0" FontSize="17"/>
+                                                                </StackPanel>
+                                                            </StackPanel>
+                                                        </StackPanel>
+
+                                                    <!-- Row 1 -->
+                                                    <StackPanel Grid.Row="1" Grid.Column="0">
+                                                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                                                <materialDesign:PackIcon Kind="CashPlus" Width="22" Height="22" Margin="0,6,0,0" Foreground="#6B7280"/>
+                                                                <StackPanel Orientation="Vertical">
+                                                                    <TextBlock Text="Cash In" Margin="6,0,0,0" FontWeight="SemiBold" FontSize="17"/>
+                                                                    <TextBlock Text="{Binding ActiveCashDrawerSession.TotalInAmount, Converter={StaticResource CurrencyFormatConverter}}" FontSize="17" Margin="6,2,0,6"/>
+                                                                </StackPanel>
+                                                            </StackPanel>
+
+                                                        </StackPanel>
+                                                    <StackPanel Grid.Row="1" Grid.Column="1">
+                                                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                                                <materialDesign:PackIcon Kind="CashMinus" Width="22" Height="22" Margin="0,6,0,0" Foreground="#6B7280" />
+                                                                <StackPanel Orientation="Vertical">
+                                                                    <TextBlock Text="Cash Out" Margin="6,0,0,0" FontWeight="SemiBold" FontSize="17"/>
+                                                                    <TextBlock Text="{Binding ActiveCashDrawerSession.TotalOutAmount, Converter={StaticResource CurrencyFormatConverter}}" Margin="6,2,0,0" FontSize="17"/>
+                                                                </StackPanel>
+                                                            </StackPanel>
+
+                                                        </StackPanel>
+
+                                                        <StackPanel Grid.Row="2" Grid.Column="1">
+                                                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                                                <materialDesign:PackIcon Kind="CashRegister" Width="22" Height="22" Margin="0,6,0,0" Foreground="#6B7280" />
+                                                                <StackPanel Orientation="Vertical">
+                                                                    <TextBlock Text="Other Sales" Margin="6,0,0,0" FontWeight="SemiBold" FontSize="17"/>
+                                                                    <TextBlock Text="{Binding ActiveCashDrawerSession.OtherSalesAmount, Converter={StaticResource CurrencyFormatConverter}}" Margin="6,2,0,0" FontSize="17"/>
+                                                                </StackPanel>
+                                                            </StackPanel>
+
+                                                        </StackPanel>
+                                                    <StackPanel Grid.Row="0" Grid.Column="2">
+                                                            <TextBlock Text="Status" FontWeight="SemiBold" FontSize="17"/>
+                                                        <Border Background="#ECFDF5" BorderBrush="#10B981" BorderThickness="1" CornerRadius="16" Padding="8,4" HorizontalAlignment="Left" Margin="0,2,0,8">
+                                                            <StackPanel Orientation="Horizontal">
+                                                                <Ellipse Width="8" Height="8" Fill="#10B981" VerticalAlignment="Center"/>
+                                                                    <TextBlock Text="{Binding ActiveCashDrawerSession.Status}" Margin="6,0,0,0" Foreground="#065F46" FontWeight="SemiBold" FontSize="17"/>
+                                                            </StackPanel>
+                                                        </Border>
+                                                    </StackPanel>
+
+                                                    <!-- Row 2 -->
+                                                    <StackPanel Grid.Row="2" Grid.Column="0">
+                                                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                                                <materialDesign:PackIcon Kind="CashRegister" Width="22" Height="22" Margin="0,6,0,0" Foreground="#6B7280" />
+                                                                <StackPanel Orientation="Vertical">
+                                                                    <TextBlock Text="POS Sales" Margin="6,0,0,0" FontWeight="SemiBold" FontSize="17"/>
+                                                                    <TextBlock Text="{Binding ActiveCashDrawerSession.TotalSalesAmount, Converter={StaticResource CurrencyFormatConverter}}" FontSize="17" Margin="6,2,0,8"/>
+                                                                </StackPanel>
+                                                            </StackPanel>
+
+                                                        </StackPanel>
+                                                    <!--<StackPanel Grid.Row="2" Grid.Column="1">
+                                                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                                                <materialDesign:PackIcon Kind="Autorenew" Width="22" Height="22" Margin="0,6,0,0" Foreground="#6B7280"/>
+                                                                <StackPanel Orientation="Vertical">
+                                                                    <TextBlock Text="Refund Amount" Margin="6,0,0,0" FontWeight="SemiBold" FontSize="17"/>
+                                                                    <TextBlock Text="{Binding ActiveCashDrawerSession.TotalRefundAmount, StringFormat=Rs {0:N2}}" FontSize="17" Margin="6,2,0,0"/>
+                                                                </StackPanel>
+                                                            </StackPanel>
+                                                        </StackPanel>-->
+
+                                                        <StackPanel Grid.Row="1" Grid.Column="2">
+                                                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                                                <materialDesign:PackIcon Kind="CashRefund" Width="22" Height="22" Margin="0,6,0,0" Foreground="#6B7280"/>
+                                                                <StackPanel Orientation="Vertical">
+                                                                    <TextBlock Text="Cash Refund" Margin="6,0,0,0" FontWeight="SemiBold" FontSize="17"/>
+                                                                    <TextBlock Text="{Binding ActiveCashDrawerSession.TotalRefundAmount, Converter={StaticResource CurrencyFormatConverter}}" FontSize="17" Margin="6,2,0,6"/>
+                                                                </StackPanel>
+                                                            </StackPanel>
+
+                                                        </StackPanel>
+                                                </Grid>
+                                            </Border>
+                                        </Grid>
+
+                                        <Border Visibility="{Binding HasActiveCashDrawerSession, Converter={StaticResource InvertBooleanToVisibilityConverter}}"
+                                                Background="#FFFFFF" CornerRadius="10" Padding="14" BorderBrush="#E5E7EB" BorderThickness="1" Margin="0,6,0,0">
+                                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                                <materialDesign:PackIcon Kind="InformationOutline" Width="20" Height="20" Foreground="#6B7280"/>
+                                                    <TextBlock Text="No active shift right now. Click 'Start Shift' to begin." FontSize="20" Margin="8,0,0,0" Foreground="#6B7280"/>
+                                            </StackPanel>
+                                        </Border>
+                                    </StackPanel>
+
+                                </StackPanel>
+                            </TabItem>
+                            <TabItem Header="Cash In/Out" Visibility="{Binding IsAdmin, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter=True}">
+                                <TabItem.HeaderTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="Cash In/Out" FontWeight="Bold" FontSize="19"/>
+                                    </DataTemplate>
+                                </TabItem.HeaderTemplate>
+                                <StackPanel Margin="12">
+                                    <!-- Date Filter Section -->
+                                    <Grid Margin="0,0,0,20" HorizontalAlignment="Right">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="150"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="150"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        
+                                        <TextBlock Text="From Date:" Grid.Column="0" VerticalAlignment="Center" Margin="0,0,10,0" FontSize="13" />
+                                        <DatePicker Grid.Column="1" SelectedDate="{Binding TransactionFromDate}" Margin="0,0,20,0" FontSize="13" VerticalAlignment="Center"
+                                                    IsDropDownOpen="False" DisplayDateEnd="{x:Static sys:DateTime.Today}"
+                                                    PreviewMouseLeftButtonDown="DatePicker_FocusOpen"
+                                                    PreviewTouchDown="DatePicker_FocusOpen"
+                                                    Loaded="DatePicker_Loaded"
+                                                     Language="{converters:CountryToLanguageExtension}"/>
+                                        <TextBlock Text="To Date:" Grid.Column="2" VerticalAlignment="Center" Margin="0,0,10,0" FontSize="13"/>
+                                        <DatePicker Grid.Column="3" SelectedDate="{Binding TransactionToDate}" Margin="0,0,8,0" FontSize="13" VerticalAlignment="Center"
+                                                    IsDropDownOpen="False" DisplayDateEnd="{x:Static sys:DateTime.Today}"
+                                                    PreviewMouseLeftButtonDown="DatePicker_FocusOpen"
+                                                    PreviewTouchDown="DatePicker_FocusOpen"
+                                                    Loaded="DatePicker_Loaded"
+                                                    Language="{converters:CountryToLanguageExtension}"/>
+                                        <StackPanel Orientation="Horizontal" Grid.Column="4" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                                <Button Content="Clear" Width="70" Height="32" Margin="10,0,10,0" VerticalAlignment="Center" Background="White" Foreground="#1976D2" BorderBrush="#1976D2"
+                                                    Command="{Binding ClearCashTransactionDatesCommand}" />
+                                            <Button Content="Load Transactions" Width="140" Height="32" Background="#1976D2" Foreground="White" HorizontalAlignment="Right"
+                                                    Command="{Binding LoadCashTransactionsCommand}" IsEnabled="{Binding IsLoadingCashTransactions, Converter={StaticResource InvertBooleanConverter}}"/>
+                                        </StackPanel>
+                                    </Grid>
+
+                                    <!-- Loading Indicator -->
+                                    <controls2:LoadingIndicator HorizontalAlignment="Center" 
+                                                        VerticalAlignment="Center" Margin="0,50,0,0"
+                                                        ProgressRingSize="70"
+                                                        Visibility="{Binding IsLoadingCashTransactions, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                                    
+
+                                    <!-- Cash Transactions Table -->
+                                    <Grid Visibility="{Binding IsLoadingCashTransactions, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter=Invert}">
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="370"/>
+                                            <RowDefinition Height="Auto"/>
+                                        </Grid.RowDefinitions>
+
+                                        <!-- Table Header -->
+                                        <Grid Grid.Row="0" Background="Transparent" Visibility="{Binding HasNoCashTransactions, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter=Invert}">
+                                            <Grid.ColumnDefinitions>
+                                                
+                                                <ColumnDefinition Width="120"/>
+                                               
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="250"/>
+                                                <ColumnDefinition Width="160"/>
+                                                <ColumnDefinition Width="200"/>
+                                                <ColumnDefinition Width="200"/>
+                                            </Grid.ColumnDefinitions>
+
+                                            <!--<TextBlock Grid.Column="0" Text="Drawer ID" FontWeight="Bold" Foreground="#1976D2" Margin="15,0,0,0"
+                                                       TextAlignment="Center" FontSize="14" VerticalAlignment="Center"/>-->
+                                            <TextBlock Grid.Column="0" Text="Shift ID" FontWeight="Bold" Foreground="#1976D2" Margin="20,0,0,0"
+                                                       TextAlignment="Center" FontSize="14" VerticalAlignment="Center"/>
+                                            <!--<TextBlock Grid.Column="2" Text="Movement ID" FontWeight="Bold" Foreground="#1976D2" Margin="20,0,0,0"
+                                                       TextAlignment="Center" FontSize="14" VerticalAlignment="Center"/>-->
+                                            <TextBlock Grid.Column="1" Text="User Name" FontWeight="Bold" Foreground="#1976D2" Margin="-30,0,0,0"
+                                                       TextAlignment="Center" FontSize="14" VerticalAlignment="Center"/>
+                                            <TextBlock Grid.Column="2" Text="Created At" FontWeight="Bold" Foreground="#1976D2" Margin="-40,0,0,0"
+                                                       TextAlignment="Center" FontSize="14" VerticalAlignment="Center"/>
+                                            <TextBlock Grid.Column="3" Text="Movement Type" FontWeight="Bold" Foreground="#1976D2" Margin="-15,0,0,0"
+                                                       TextAlignment="Center" FontSize="14" VerticalAlignment="Center"/>
+                                            <TextBlock Grid.Column="4" Text="Amount" FontWeight="Bold" Foreground="#1976D2" Margin="-30,0,0,0"
+                                                       TextAlignment="Center" FontSize="14" VerticalAlignment="Center"/>
+                                            <TextBlock Grid.Column="5" Text="Note" FontWeight="Bold" Foreground="#1976D2" Margin="0,0,0,0"
+                                                       TextAlignment="Left" FontSize="14" VerticalAlignment="Center"/>
+                                        </Grid>
+
+                                        <!-- Table Rows -->
+                                        <ScrollViewer Grid.Row="1" MaxHeight="400" VerticalScrollBarVisibility="Auto" Visibility="{Binding HasNoCashTransactions, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter=Invert}">
+                                            <ItemsControl ItemsSource="{Binding CashDrawerTransactions}">
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <Border BorderThickness="0,0,0,1" BorderBrush="#E0E0E0" Padding="10,8">
+                                                            <Grid>
+                                                                <Grid.ColumnDefinitions>
+                                                                    
+                                                                    <ColumnDefinition Width="120"/>
+                                                                   
+                                                                    <ColumnDefinition Width="*"/>
+                                                                    <ColumnDefinition Width="250"/>
+                                                                    <ColumnDefinition Width="160"/>
+                                                                    <ColumnDefinition Width="200"/>
+                                                                    <ColumnDefinition Width="200"/>
+                                                                </Grid.ColumnDefinitions>
+
+                                                                <!-- Cash Drawer ID -->
+                                                                <!--<TextBlock Grid.Column="0" Text="{Binding CashDrawerId}" 
+                                                                           FontSize="14" Foreground="#333"  Padding="0,4"
+                                                                           TextAlignment="Center" VerticalAlignment="Center"/>-->
+
+                                                                <!-- Cash Drawer Session ID -->
+                                                                <TextBlock Grid.Column="0" Text="{Binding CashDrawerSessionId}" 
+                                                                           FontSize="14"  Foreground="#333" Padding="0,4"
+                                                                           TextAlignment="Center" VerticalAlignment="Center"/>
+
+                                                                <!-- Cash Movement ID -->
+                                                                <!--<TextBlock Grid.Column="2" Text="{Binding CashMovementId}" 
+                                                                           FontSize="14"  Foreground="#333" Padding="0,4"
+                                                                           TextAlignment="Center" VerticalAlignment="Center"/>-->
+
+                                                                <!-- User Name -->
+                                                                <TextBlock Grid.Column="1" Text="{Binding UserName}" 
+                                                                           FontSize="14"  Foreground="#333" Padding="0,4"
+                                                                           TextAlignment="Center" VerticalAlignment="Center"/>
+
+                                                                <!-- Created At -->
+                                                                    <TextBlock Grid.Column="2" Text="{Binding CreatedAt, Converter={StaticResource CountryBasedDateTimeConverter}}" 
+                                                                           FontSize="14" Foreground="#333" Padding="0,4"
+                                                                           TextAlignment="Center" VerticalAlignment="Center"/>
+
+                                                                <!-- Movement Type -->
+                                                                <TextBlock Grid.Column="3" Text="{Binding MovementType}" 
+                                                                           FontSize="14"  Foreground="#333" Padding="0,4"
+                                                                           TextAlignment="Center" VerticalAlignment="Center"/>
+
+                                                                <!-- Amount -->
+                                                                <TextBlock Grid.Column="4" Text="{Binding Amount, Converter={StaticResource CurrencyFormatConverter}}" 
+                                                                           FontSize="14" Foreground="#333" Padding="0,4"
+                                                                           TextAlignment="Center" VerticalAlignment="Center"/>
+                                                            
+                                                                <!-- Note -->
+                                                                <TextBlock Grid.Column="5" Text="{Binding Note, Converter={StaticResource EmptyStringToDashConverter}}" TextWrapping="Wrap"
+                                                                           FontSize="14" Foreground="#333" Padding="0,4"
+                                                                           TextAlignment="Left" VerticalAlignment="Center"/>
+                                                            </Grid>
+                                                        </Border>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                        </ScrollViewer>
+
+                                        <!-- Pagination Footer -->
+                                        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,10,0,10" Visibility="{Binding HasNoCashTransactions, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter=Invert}">
+                                            <Button Content="First" Command="{Binding CashTransactionFirstPageCommand}" 
+                                                    Margin="0,0,8,0" Padding="10,6" BorderBrush="Transparent" 
+                                                    Background="#1976D2" Foreground="White"/>
+                                            <Button Command="{Binding CashTransactionPrevPageCommand}" Margin="0,0,8,0" 
+                                                    Padding="10,6" BorderBrush="Transparent" 
+                                                    Background="#1976D2" Foreground="White">
+                                                <materialDesign:PackIcon Kind="NavigateBefore" VerticalAlignment="Center" Margin="0,0,0,0"/>
+                                            </Button>
+
+                                            <TextBlock Text="{Binding CashTransactionPageInfoText}" VerticalAlignment="Center" 
+                                                       Margin="0,0,8,0" FontSize="14" Foreground="#666"/>
+
+                                            <Button Command="{Binding CashTransactionNextPageCommand}" Margin="0,0,8,0" 
+                                                    Padding="10,6" BorderBrush="Transparent" 
+                                                    Background="#1976D2" Foreground="White">
+                                                <materialDesign:PackIcon Kind="NavigateNext" VerticalAlignment="Center" Margin="0,0,0,0"/>
+                                            </Button>
+                                            <Button Content="Last" Command="{Binding CashTransactionLastPageCommand}" 
+                                                    Padding="10,6" BorderBrush="Transparent" 
+                                                    Background="#1976D2" Foreground="White"/>
+                                        </StackPanel>
+
+                                        <!-- No Data Message -->
+                                        <TextBlock Grid.Row="0" Grid.RowSpan="3" Text="No cash transactions found for the selected date range." 
+                                                   HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                   FontSize="16" Foreground="Gray" Margin="0,70,0,0"
+                                                   Visibility="{Binding HasNoCashTransactions, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                                    </Grid>
+                                </StackPanel>
+                            </TabItem>
+                            <TabItem Header="Cash Session" FontSize="16" Visibility="{Binding IsAdmin, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter=True}">
+                                <TabItem.HeaderTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="Shift History" FontWeight="Bold" FontSize="19"/>
+                                    </DataTemplate>
+                                </TabItem.HeaderTemplate>
+                                <Grid Margin="12">
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="*"/>
+                                        </Grid.RowDefinitions>
+                                        <Grid Grid.Row="0">
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="388"/>
+                                                <RowDefinition Height="Auto"/>
+                                            </Grid.RowDefinitions>
+
+                                            <!-- Date Filter Section -->
+                                            <Grid Grid.Row="0" Margin="0,0,0,20" HorizontalAlignment="Right">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="150"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="150"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+
+                                                <TextBlock Text="From Date:" Grid.Column="0" VerticalAlignment="Center" Margin="0,0,10,0" FontSize="13" />
+                                                <DatePicker Grid.Column="1" SelectedDate="{Binding FromDate}" Margin="0,0,20,0" FontSize="13" VerticalAlignment="Center"
+                                                    IsDropDownOpen="False" DisplayDateEnd="{x:Static sys:DateTime.Today}"
+                                                    PreviewMouseLeftButtonDown="DatePicker_FocusOpen"
+                                                    PreviewTouchDown="DatePicker_FocusOpen"
+                                                    Loaded="DatePicker_Loaded"
+                                                    Language="{converters:CountryToLanguageExtension}"/>
+                                                <TextBlock Text="To Date:" Grid.Column="2" VerticalAlignment="Center" Margin="0,0,10,0" FontSize="13"/>
+                                                <DatePicker Grid.Column="3" SelectedDate="{Binding ToDate}" Margin="0,0,8,0" FontSize="13" VerticalAlignment="Center"
+                                                    IsDropDownOpen="False" DisplayDateEnd="{x:Static sys:DateTime.Today}"
+                                                    PreviewMouseLeftButtonDown="DatePicker_FocusOpen"
+                                                    PreviewTouchDown="DatePicker_FocusOpen"
+                                                    Loaded="DatePicker_Loaded"
+                                                    Language="{converters:CountryToLanguageExtension}"/>
+                                                <StackPanel Orientation="Horizontal" Grid.Column="4" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                                    <Button Content="Clear" Width="70" Height="32" Margin="10,0,10,0" VerticalAlignment="Center" Background="White" Foreground="#1976D2" BorderBrush="#1976D2"
+                                                    Command="{Binding ClearCashSessionDatesCommand}" />
+                                                    <Button Content="Load Shifts" Width="120" Height="32" Background="#1976D2" Foreground="White" HorizontalAlignment="Right"
+                                                    Command="{Binding LoadCashSessionsCommand}" IsEnabled="{Binding IsLoadingCashSessions, Converter={StaticResource InvertBooleanConverter}}"/>
+                                                </StackPanel>
+                                            </Grid>
+
+                                            <!-- Loading Indicator -->
+                                            <controls2:LoadingIndicator HorizontalAlignment="Center" 
+                                                        VerticalAlignment="Center" Margin="0,50,0,0"
+                                                        ProgressRingSize="70"
+                                                        Visibility="{Binding IsLoadingCashSessions, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+
+                                            <!-- Cash Sessions Table -->
+                                            <Grid  Grid.Row="1" Visibility="{Binding IsLoadingCashSessions, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter=Invert}">
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="Auto"/>
+                                                    <RowDefinition Height="*"/>
+                                                    
+                                                </Grid.RowDefinitions>
+
+                                                <!-- Table Header -->
+                                                <Grid Grid.Row="0" Background="Transparent" Visibility="{Binding HasNoCashSessions, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter=Invert}">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="80"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="170"/>
+                                                        <ColumnDefinition Width="170"/>
+                                                        <ColumnDefinition Width="180"/>
+                                                        <ColumnDefinition Width="120"/>
+                                                    </Grid.ColumnDefinitions>
+
+                                                    <TextBlock Grid.Column="0" Text="ID" FontWeight="Bold" Foreground="#1976D2" Margin="15,0,0,0"
+                                                       TextAlignment="Center" FontSize="14" VerticalAlignment="Center"/>
+                                                    <TextBlock Grid.Column="1" Text="Started By User" FontWeight="Bold" Foreground="#1976D2" Margin="20,0,0,0"
+                                                       TextAlignment="Center" FontSize="14" VerticalAlignment="Center"/>
+                                                    <TextBlock Grid.Column="2" Text="Ended By User" FontWeight="Bold" Foreground="#1976D2" Margin="10,0,0,0"
+                                                       TextAlignment="Center" FontSize="14" VerticalAlignment="Center"/>
+                                                    <TextBlock Grid.Column="3" Text="Opening Time" FontWeight="Bold" Foreground="#1976D2" Margin="-5,0,0,0"
+                                                       TextAlignment="Center" FontSize="14" VerticalAlignment="Center"/>
+                                                    <TextBlock Grid.Column="4" Text="Closing Time" FontWeight="Bold" Foreground="#1976D2" Margin="-10,0,0,0"
+                                                       TextAlignment="Center" FontSize="14" VerticalAlignment="Center"/>
+                                                    <TextBlock Grid.Column="5" Text="Expected Balance" FontWeight="Bold" Foreground="#1976D2" 
+                                                       TextAlignment="Center" FontSize="14" VerticalAlignment="Center"/>
+                                                    <TextBlock Grid.Column="6" Text="Actions" FontWeight="Bold" Foreground="#1976D2" Margin="-15,0,0,0"
+                                                       TextAlignment="Center" FontSize="14" VerticalAlignment="Center"/>
+                                                </Grid>
+
+                                                <!-- Table Rows -->
+                                                <ScrollViewer Grid.Row="1" MaxHeight="400" VerticalScrollBarVisibility="Auto" Visibility="{Binding HasNoCashSessions, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter=Invert}">
+                                                    <ItemsControl ItemsSource="{Binding CashDrawerSessions}">
+                                                        <ItemsControl.ItemTemplate>
+                                                            <DataTemplate>
+                                                                <Border BorderThickness="0,0,0,1" BorderBrush="#E0E0E0" Padding="10,9">
+                                                                    <Grid>
+                                                                        <Grid.ColumnDefinitions>
+                                                                            <ColumnDefinition Width="80"/>
+                                                                            <ColumnDefinition Width="*"/>
+                                                                            <ColumnDefinition Width="*"/>
+                                                                            <ColumnDefinition Width="160"/>
+                                                                            <ColumnDefinition Width="160"/>
+                                                                            <ColumnDefinition Width="180"/>
+                                                                            <ColumnDefinition Width="120"/>
+                                                                        </Grid.ColumnDefinitions>
+
+                                                                        <!-- Session ID -->
+                                                                        <TextBlock Grid.Column="0" Text="{Binding Id}" 
+                                                                           FontSize="14" FontWeight="SemiBold" Foreground="#333" 
+                                                                           TextAlignment="Center" VerticalAlignment="Center"/>
+
+                                                                        <!-- Started By User -->
+                                                                        <TextBlock Grid.Column="1" Text="{Binding SessionStartedUser}" 
+                                                                           FontSize="14" Foreground="#333" 
+                                                                           TextAlignment="Center" VerticalAlignment="Center"/>
+
+                                                                        <!-- Ended By User -->
+                                                                        <TextBlock Grid.Column="2" Text="{Binding SessionEndedUser}" 
+                                                                           FontSize="14" Foreground="#333" 
+                                                                           TextAlignment="Center" VerticalAlignment="Center"/>
+
+                                                                        <!-- Opening Time -->
+                                                                        <TextBlock Grid.Column="3" Text="{Binding OpenedAt, Converter={StaticResource CountryBasedDateTimeConverter}}" 
+                                                                           FontSize="14" Foreground="#333" 
+                                                                           TextAlignment="Center" VerticalAlignment="Center"/>
+
+                                                                        <!-- Closing Time -->
+                                                                        <TextBlock Grid.Column="4" Text="{Binding ClosedAt, Converter={StaticResource CountryBasedDateTimeConverter}}" 
+                                                                           FontSize="14" Foreground="#333" 
+                                                                           TextAlignment="Center" VerticalAlignment="Center">
+                                                                            <TextBlock.Style>
+                                                                                <Style TargetType="TextBlock">
+                                                                                    <Setter Property="Text" Value="Not Closed"/>
+                                                                                    <Setter Property="Foreground" Value="Gray"/>
+                                                                                    <Style.Triggers>
+                                                                                        <DataTrigger Binding="{Binding ClosedAt}" Value="{x:Null}">
+                                                                                            <Setter Property="Text" Value="Not Closed"/>
+                                                                                            <Setter Property="Foreground" Value="Gray"/>
+                                                                                        </DataTrigger>
+                                                                                    </Style.Triggers>
+                                                                                </Style>
+                                                                            </TextBlock.Style>
+                                                                        </TextBlock>
+
+                                                                        <!-- Expected Balance -->
+                                                                        <TextBlock Grid.Column="5" Text="{Binding ClosingBalanceExpected, Converter={StaticResource CurrencyFormatConverter}}" 
+                                                                           FontSize="14" FontWeight="SemiBold" Foreground="#333" 
+                                                                           TextAlignment="Center" VerticalAlignment="Center"/>
+
+                                                                        <!-- View Button -->
+                                                                        <Button Grid.Column="6" Content="View" 
+                                                                        Background="#1976D2" Foreground="White" 
+                                                                        BorderBrush="Transparent" FontSize="14" 
+                                                                        Width="90" Height="30" 
+                                                                        HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                                        Click="ViewCashSession_Click"
+                                                                        Tag="{Binding}"/>
+                                                                    </Grid>
+                                                                </Border>
+                                                            </DataTemplate>
+                                                        </ItemsControl.ItemTemplate>
+                                                    </ItemsControl>
+                                                </ScrollViewer>
+
+                                                <!-- No Data Message -->
+                                                <TextBlock Grid.Row="0" Grid.RowSpan="2" Text="No shifts found for the selected date range." 
+                                                   HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                   FontSize="16" Foreground="Gray" Margin="0,50,0,0"
+                                                   Visibility="{Binding HasNoCashSessions, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                                            
+                                            </Grid>
+                                            
+                                            <!-- Pagination Footer (stick to bottom of the tab) -->
+                                            <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,10,0,0" Visibility="{Binding HasNoCashSessions, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter=Invert}">
+                                                <Button Content="First" Command="{Binding CashSessionFirstPageCommand}" 
+                                                         Margin="0,0,8,0" Padding="10,6" BorderBrush="Transparent" 
+                                                         Background="#1976D2" Foreground="White"/>
+                                                <Button Command="{Binding CashSessionPrevPageCommand}" Margin="0,0,8,0" 
+                                                         Padding="10,6" BorderBrush="Transparent" 
+                                                         Background="#1976D2" Foreground="White">   
+                                                    <materialDesign:PackIcon Kind="NavigateBefore" VerticalAlignment="Center" Margin="0,0,0,0"/>
+                                                </Button>
+
+                                                <TextBlock Text="{Binding CashSessionPageInfoText}" VerticalAlignment="Center" 
+                                                            Margin="0,0,8,0" FontSize="14" Foreground="#666"/>
+
+                                                <Button Command="{Binding CashSessionNextPageCommand}" Margin="0,0,8,0" 
+                                                         Padding="10,6" BorderBrush="Transparent" 
+                                                         Background="#1976D2" Foreground="White">   
+                                                    <materialDesign:PackIcon Kind="NavigateNext" VerticalAlignment="Center" Margin="0,0,0,0"/>
+                                                </Button>
+                                                <Button Content="Last" Command="{Binding CashSessionLastPageCommand}" 
+                                                         Padding="10,6" BorderBrush="Transparent" 
+                                                         Background="#1976D2" Foreground="White"/>
+                                            </StackPanel>
+                                        </Grid>
+                                </Grid>
+                            </TabItem>
+                        </TabControl>
+                    </StackPanel>
+                    </Border>
+                    
+                    <!-- Loading Overlay for Z Report Printing -->
+                    <Grid Visibility="{Binding IsPrintingZReport, Converter={StaticResource BooleanToVisibilityConverter}}" 
+                          Background="#80BDBDBD" Panel.ZIndex="1000">
+                        <controls:LoadingIndicator HorizontalAlignment="Center" 
+                                                   VerticalAlignment="Center" 
+                                                   ProgressRingSize="70"/>
+                    </Grid>
+                                </Grid>
+                            </TabItem>
+
+                            <!-- POS Orders Tab -->
+                            <TabItem Header="POS Orders">
+                                <TabItem.HeaderTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="POS Orders" FontWeight="Bold" FontSize="20"/>
+                                    </DataTemplate>
+                                </TabItem.HeaderTemplate>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="412*"/>
+                                        <ColumnDefinition Width="111*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="*"/>
+                                    </Grid.RowDefinitions>
+
+
+                                    <!-- Loading Indicator -->
+                                    <controls:LoadingIndicator Grid.Row="1" Panel.ZIndex="1000"
+                                                  HorizontalAlignment="Left" 
+                                                  VerticalAlignment="Top" 
+                                                  ProgressRingSize="70"
+                                                  Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}" Margin="523,300,0,0"/>
+
+                                    <!-- Filters Bar for POS Orders -->
+                                    <Border Grid.Row="0" Background="White" CornerRadius="8" Padding="0" Margin="0,8,8,0" HorizontalAlignment="Right" Grid.ColumnSpan="2">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,12,0">
+                                                <TextBlock Text="From:" VerticalAlignment="Center" Margin="0,0,6,0" FontSize="16"/>
+                                                <DatePicker SelectedDate="{Binding FromDate}" FontSize="16" VerticalAlignment="Center"
+                                                          IsDropDownOpen="False" DisplayDateEnd="{x:Static sys:DateTime.Today}"
+                                                          PreviewMouseLeftButtonDown="DatePicker_FocusOpen"
+                                                          PreviewTouchDown="DatePicker_FocusOpen"
+                                                          Loaded="DatePicker_Loaded"
+                                                          Language="{converters:CountryToLanguageExtension}"/>
+                                            </StackPanel>
+                                            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,12,0">
+                                                <TextBlock Text="To:" VerticalAlignment="Center" Margin="0,0,6,0" FontSize="16"/>
+                                                <DatePicker SelectedDate="{Binding ToDate}" FontSize="16" VerticalAlignment="Center"
+                                                          IsDropDownOpen="False" DisplayDateEnd="{x:Static sys:DateTime.Today}"
+                                                          PreviewMouseLeftButtonDown="DatePicker_FocusOpen"
+                                                          PreviewTouchDown="DatePicker_FocusOpen"
+                                                          Loaded="DatePicker_Loaded"
+                                                          Language="{converters:CountryToLanguageExtension}"/>
+                                            </StackPanel>
+                                            <Button Grid.Column="2" Content="Show" Command="{Binding ShowPosStatsCommand}" VerticalAlignment="Center"
+                                                    Background="#1976D2" Foreground="White" Padding="14,8" Margin="0,0,12,0" Width="90"/>
+                                            <Button Grid.Column="3" Content="Clear" Command="{Binding ClearDatesCommand}" VerticalAlignment="Center"
+                                                    Background="#EEEEEE" Foreground="#333" Padding="14,8" Width="90"/>
+                                        </Grid>
+                                    </Border>
+
+                                    <!-- Summary Cards -->
+                                    <ScrollViewer Grid.Row="1" Margin="8,8,8,8" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Disabled"
+                                                  Visibility="{Binding IsLoading, Converter={StaticResource InvertBooleanToVisibilityConverter}}" Grid.ColumnSpan="2">
+                                        <Grid>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="*"/>
+                                                <RowDefinition Height="*"/>
+                                                <RowDefinition Height="*"/>
+                                                <RowDefinition Height="*"/>
+
+                                            </Grid.RowDefinitions>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <Border Grid.Column="0" Grid.Row="0" CornerRadius="8" Padding="10" Margin="8" BorderBrush="#E0E0E0" BorderThickness="1" Height="100" Background="#FFF8F8F8">
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                        <ColumnDefinition Width="80"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Text="Total Orders" VerticalAlignment="Center" Style="{StaticResource TwoLineMetricLabel}"/>
+                                                    <TextBlock Grid.Column="1" Text="{Binding TotalOrders}" FontSize="22" FontWeight="Bold" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                                                </Grid>
+                                            </Border>
+                                            <Border Background="#FFF8F8F8"  Grid.Column="2" Grid.Row="1" CornerRadius="8" Padding="10,12" Margin="8" BorderBrush="#E0E0E0" BorderThickness="1" >
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="60"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Text="Total DineIn Orders" VerticalAlignment="Center" Style="{StaticResource TwoLineMetricLabel}"/>
+                                                    <TextBlock Grid.Column="1" Text="{Binding TotalDineInOrders}" FontSize="22" FontWeight="Bold" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                                                </Grid>
+                                            </Border>
+                                            <Border Background="#FFF8F8F8"  Grid.Column="2" Grid.Row="2" CornerRadius="8" Padding="10,12" Margin="8" BorderBrush="#E0E0E0" BorderThickness="1">
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="60"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Text="Total Takeaway Orders" VerticalAlignment="Center" Style="{StaticResource TwoLineMetricLabel}"/>
+                                                    <TextBlock Grid.Column="1" Text="{Binding TotalTakeawayOrders}" FontSize="22" FontWeight="Bold" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                                                </Grid>
+                                            </Border>
+                                            <Border Background="#FFF8F8F8" Grid.Column="0" Grid.Row="2" CornerRadius="8" Padding="10,12" Margin="8" BorderBrush="#E0E0E0" BorderThickness="1" Height="100">
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="80"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Grid.Column="0" Text="Total Delivery Orders" VerticalAlignment="Center" Style="{StaticResource TwoLineMetricLabel}" Margin="0,0,0,0"/>
+                                                    <TextBlock  Grid.Column="1" Text="{Binding TotalDeliveryOrders}" FontSize="22" FontWeight="Bold" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,0,0"/>
+                                                </Grid>
+                                            </Border>
+                                            <Border Background="#FFF8F8F8"  Grid.Column="1" Grid.Row="0" CornerRadius="8" Padding="10,12" Margin="5,8" BorderBrush="#E0E0E0" BorderThickness="1" Height="100">
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="140"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Text="Total Revenue" VerticalAlignment="Center" Style="{StaticResource TwoLineMetricLabel}"/>
+                                                    <TextBlock Grid.Column="1" FontSize="22" FontWeight="Bold" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                                        <TextBlock.Text>
+                                                            <MultiBinding StringFormat="{}{0} {1:F2}">
+                                                                <Binding Path="Currency"/>
+                                                                <Binding Path="PosTotalRevenue"/>
+                                                            </MultiBinding>
+                                                        </TextBlock.Text>
+                                                    </TextBlock>
+                                                </Grid>
+                                            </Border>
+                                            <!-- New Row: Payment breakdown -->
+                                            <Border Background="#FFF8F8F8"  Grid.Column="2" Grid.Row="0" CornerRadius="8" Padding="10,12" Margin="8" BorderBrush="#E0E0E0" BorderThickness="1" Height="100">
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="70"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Text="Total Cash Orders" VerticalAlignment="Center" Style="{StaticResource TwoLineMetricLabel}"/>
+                                                    <TextBlock Grid.Column="1" Text="{Binding TotalPOSCashOrders}" FontSize="22" FontWeight="Bold" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                                                </Grid>
+                                            </Border>
+                                            <Border Background="#FFF8F8F8"  Grid.Column="0" Grid.Row="1" CornerRadius="8" Padding="10,12" Margin="8" BorderBrush="#E0E0E0" BorderThickness="1" Height="100">
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                        <ColumnDefinition Width="80"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Text="Total Card Orders" VerticalAlignment="Center" Style="{StaticResource TwoLineMetricLabel}"/>
+                                                    <TextBlock Grid.Column="1" Text="{Binding TotalPOSCardOrders}" FontSize="22" FontWeight="Bold" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                                                </Grid>
+                                            </Border>
+                                            <Border Background="#FFF8F8F8"  Grid.Column="1" Grid.Row="1" CornerRadius="8" Padding="10,12" Margin="8" BorderBrush="#E0E0E0" BorderThickness="1" Height="100">
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="140"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Text="Card Revenue" VerticalAlignment="Center" Style="{StaticResource TwoLineMetricLabel}"/>
+                                                    <TextBlock Grid.Column="1" FontSize="22" FontWeight="Bold" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                                        <TextBlock.Text>
+                                                            <MultiBinding StringFormat="{}{0} {1:F2}">
+                                                                <Binding Path="Currency"/>
+                                                                <Binding Path="POSCardOrdersAmount"/>
+                                                            </MultiBinding>
+                                                        </TextBlock.Text>
+                                                    </TextBlock>
+                                                </Grid>
+                                            </Border>
+                                            <Border Background="#FFF8F8F8"  Grid.Column="3" Grid.Row="0" CornerRadius="8" Padding="10,12" Margin="8" BorderBrush="#E0E0E0" BorderThickness="1" Height="100">
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="140"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Text="Cash Revenue" VerticalAlignment="Center" Style="{StaticResource TwoLineMetricLabel}"/>
+                                                    <TextBlock Grid.Column="1" FontSize="22" FontWeight="Bold" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                                        <TextBlock.Text>
+                                                            <MultiBinding StringFormat="{}{0} {1:F2}">
+                                                                <Binding Path="Currency"/>
+                                                                <Binding Path="POSCashOrdersAmount"/>
+                                                            </MultiBinding>
+                                                        </TextBlock.Text>
+                                                    </TextBlock>
+                                                </Grid>
+                                            </Border>
+                                            <Border Background="#FFF8F8F8"  Grid.Column="0" Grid.Row="3" CornerRadius="8" Padding="10,12" Margin="8" BorderBrush="#E0E0E0" BorderThickness="1" Height="100">
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="80"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Text="Canceled Orders" VerticalAlignment="Center" FontSize="18"  Style="{StaticResource TwoLineMetricLabel}"/>
+                                                    <TextBlock Grid.Column="1" Text="{Binding PosCancelledOrders}" FontSize="22" FontWeight="Bold" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                                                </Grid>
+                                            </Border>
+                                            <Border Background="#FFF8F8F8"  Grid.Column="1" Grid.Row="3" CornerRadius="8" Padding="10,12" Margin="8" BorderBrush="#E0E0E0" BorderThickness="1" Height="100">
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="140"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Text="Canceled Revenue" VerticalAlignment="Center" FontSize="18"  Style="{StaticResource TwoLineMetricLabel}"/>
+                                                    <TextBlock Grid.Column="1" FontSize="22" FontWeight="Bold" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                                        <TextBlock.Text>
+                                                            <MultiBinding StringFormat="{}{0} {1:F2}">
+                                                                <Binding Path="Currency"/>
+                                                                <Binding Path="PosCancelledAmount"/>
+                                                            </MultiBinding>
+                                                        </TextBlock.Text>
+                                                    </TextBlock>
+                                                </Grid>
+                                            </Border>
+                                            <Border Background="#FFF8F8F8"  Grid.Column="2" Grid.Row="3" CornerRadius="8" Padding="10,12" Margin="8" BorderBrush="#E0E0E0" BorderThickness="1" Height="100" Cursor="Hand" MouseLeftButtonDown="TaxBreakdownCard_MouseLeftButtonDown">
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Text="Tax Breakdown" VerticalAlignment="Center" FontSize="18"  Style="{StaticResource TwoLineMetricLabel}"/>
+                                                    <TextBlock Grid.Column="1" FontSize="22" FontWeight="Bold" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                                        <TextBlock.Text>
+                                                            <MultiBinding StringFormat="{}{0} {1:F2}">
+                                                                <Binding Path="Currency"/>
+                                                                <Binding Path="PosTotalTaxAmount"/>
+                                                            </MultiBinding>
+                                                        </TextBlock.Text>
+                                                    </TextBlock>
+                                                </Grid>
+                                            </Border>
+                                            <Border Background="#FFF8F8F8"  Grid.Column="3" Grid.Row="1" CornerRadius="8" Padding="10,12" Margin="8" BorderBrush="#E0E0E0" BorderThickness="1" Height="100">
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="140"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Text="DineIn Revenue" VerticalAlignment="Center" FontSize="18"/>
+                                                    <TextBlock Grid.Column="1" FontSize="22" FontWeight="Bold" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                                        <TextBlock.Text>
+                                                            <MultiBinding StringFormat="{}{0} {1:F2}">
+                                                                <Binding Path="Currency"/>
+                                                                <Binding Path="TotalDineInAmount"/>
+                                                            </MultiBinding>
+                                                        </TextBlock.Text>
+                                                    </TextBlock>
+                                                </Grid>
+                                            </Border>
+                                            <Border Background="#FFF8F8F8" Grid.Column="1" Grid.Row="2" CornerRadius="8" Padding="10,12" Margin="8" BorderBrush="#E0E0E0" BorderThickness="1" Height="100">
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="140"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Text="Delivery Revenue" VerticalAlignment="Center" FontSize="18"  Style="{StaticResource TwoLineMetricLabel}"/>
+                                                    <TextBlock Grid.Column="1" FontSize="22" FontWeight="Bold" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                                        <TextBlock.Text>
+                                                            <MultiBinding StringFormat="{}{0} {1:F2}">
+                                                                <Binding Path="Currency"/>
+                                                                <Binding Path="TotalDeliveryAmount"/>
+                                                            </MultiBinding>
+                                                        </TextBlock.Text>
+                                                    </TextBlock>
+                                                </Grid>
+                                            </Border>
+                                            <Border Background="#FFF8F8F8"  Grid.Column="3" Grid.Row="2" CornerRadius="8" Padding="10,12" Margin="8" BorderBrush="#E0E0E0" BorderThickness="1" Height="100">
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="140"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Text="Takeaway Revenue" VerticalAlignment="Center" FontSize="18"  Style="{StaticResource TwoLineMetricLabel}"/>
+                                                    <TextBlock Grid.Column="1" FontSize="22" FontWeight="Bold" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                                        <TextBlock.Text>
+                                                            <MultiBinding StringFormat="{}{0} {1:F2}">
+                                                                <Binding Path="Currency"/>
+                                                                <Binding Path="TotalTakeawayAmount"/>
+                                                            </MultiBinding>
+                                                        </TextBlock.Text>
+                                                    </TextBlock>
+                                                </Grid>
+                                            </Border>
+                                        </Grid>
+                                    </ScrollViewer>
+
+                                    <!-- Placeholder for table/list below cards (optional) -->
+                                    <Grid Grid.Row="1" Grid.ColumnSpan="2"/>
+                                </Grid>
+                            </TabItem>
+
+                            <!-- All Orders Tab -->
+                            <TabItem Header="All Orders">
+                                <TabItem.HeaderTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="All Orders" FontWeight="Bold" FontSize="20"/>
+                                    </DataTemplate>
+                                </TabItem.HeaderTemplate>
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="*"/>
+                                    </Grid.RowDefinitions>
+
+                                    <!-- Loading Indicator -->
+                                    <controls:LoadingIndicator Grid.Row="0" Grid.RowSpan="2" Panel.ZIndex="1000"
+                                                  HorizontalAlignment="Center" 
+                                                  VerticalAlignment="Center" 
+                                                  ProgressRingSize="70"
+                                                  Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+
+                                    <!-- Filters Bar for All Orders -->
+                                    <Border Grid.Row="0" Background="White" CornerRadius="8" Padding="0" Margin="8,8,8,0" HorizontalAlignment="Right">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,12,0">
+                                                <TextBlock Text="From:" VerticalAlignment="Center" Margin="0,0,6,0" FontSize="16"/>
+                                                <DatePicker SelectedDate="{Binding FromDate}" FontSize="16" VerticalAlignment="Center"
+                                                          IsDropDownOpen="False" DisplayDateEnd="{x:Static sys:DateTime.Today}"
+                                                          PreviewMouseLeftButtonDown="DatePicker_FocusOpen"
+                                                          PreviewTouchDown="DatePicker_FocusOpen"
+                                                          Loaded="DatePicker_Loaded"
+                                                          Language="{converters:CountryToLanguageExtension}"/>
+                                            </StackPanel>
+                                            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,12,0">
+                                                <TextBlock Text="To:" VerticalAlignment="Center" Margin="0,0,6,0" FontSize="16"/>
+                                                <DatePicker SelectedDate="{Binding ToDate}" FontSize="16" VerticalAlignment="Center"
+                                                          IsDropDownOpen="False" DisplayDateEnd="{x:Static sys:DateTime.Today}"
+                                                          PreviewMouseLeftButtonDown="DatePicker_FocusOpen"
+                                                          PreviewTouchDown="DatePicker_FocusOpen"
+                                                          Loaded="DatePicker_Loaded"
+                                                          Language="{converters:CountryToLanguageExtension}"/>
+                                            </StackPanel>
+                                            <Button Grid.Column="2" Content="Show" Command="{Binding ShowDashboardStatsCommand}" VerticalAlignment="Center"
+                                                    Background="#1976D2" Foreground="White" Padding="14,8" Margin="0,0,12,0" Width="90"/>
+                                            <Button Grid.Column="3" Content="Clear" Command="{Binding ClearDatesCommand}" VerticalAlignment="Center"
+                                                    Background="#EEEEEE" Foreground="#333" Padding="14,8" Width="90"/>
+                                        </Grid>
+                                    </Border>
+
+                                    <!-- All Orders Summary Cards -->
+                                    <ScrollViewer Grid.Row="1" Margin="8" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Disabled"
+                                                  Visibility="{Binding IsLoading, Converter={StaticResource InvertBooleanToVisibilityConverter}}">
+                                        <Grid>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="*"/>
+                                                <RowDefinition Height="*"/>
+                                                <RowDefinition Height="*"/>
+                                            </Grid.RowDefinitions>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+
+                                            <!-- Row 1 -->
+                                            <Border Grid.Column="0" Grid.Row="0" CornerRadius="8" Padding="12" Margin="8" BorderBrush="#E0E0E0" BorderThickness="1" Height="125" Background="#FFF8F8F8">
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="80"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Text="Total Orders" VerticalAlignment="Center" FontSize="18"/>
+                                                    <TextBlock Grid.Column="1" Text="{Binding AllTotalOrders}" FontSize="22" FontWeight="Bold" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                                                </Grid>
+                                            </Border>
+                                            <Border Grid.Column="1" Grid.Row="0" CornerRadius="8" Padding="12" Margin="8" BorderBrush="#E0E0E0" BorderThickness="1" Height="125" Background="#FFF8F8F8">
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="80"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Text="Completed Orders" VerticalAlignment="Center" FontSize="18"/>
+                                                    <TextBlock Grid.Column="1" Text="{Binding AllCompletedOrders}" FontSize="22" FontWeight="Bold" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                                                </Grid>
+                                            </Border>
+                                            <Border Grid.Column="2" Grid.Row="0" CornerRadius="8" Padding="12" Margin="8" BorderBrush="#E0E0E0" BorderThickness="1" Height="125" Background="#FFF8F8F8">
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="80"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Text="Accepted Orders" VerticalAlignment="Center" FontSize="18"/>
+                                                    <TextBlock Grid.Column="1" Text="{Binding AllAcceptedOrders}" FontSize="22" FontWeight="Bold" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                                                </Grid>
+                                            </Border>
+
+                                            <!-- Row 2 -->
+                                            <Border Grid.Column="0" Grid.Row="1" CornerRadius="8" Padding="12" Margin="8" BorderBrush="#E0E0E0" BorderThickness="1" Height="125" Background="#FFF8F8F8">
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="80"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Text="Cancelled Orders" VerticalAlignment="Center" FontSize="18"/>
+                                                    <TextBlock Grid.Column="1" Text="{Binding AllCancelledOrders}" FontSize="22" FontWeight="Bold" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                                                </Grid>
+                                            </Border>
+                                            <Border Grid.Column="1" Grid.Row="1" CornerRadius="8" Padding="12" Margin="8" BorderBrush="#E0E0E0" BorderThickness="1" Height="125" Background="#FFF8F8F8">
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="80"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Text="Declined Orders" VerticalAlignment="Center" FontSize="18"/>
+                                                    <TextBlock Grid.Column="1" Text="{Binding AllDeclinedOrders}" FontSize="22" FontWeight="Bold" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                                                </Grid>
+                                            </Border>
+                                            <Border Grid.Column="2" Grid.Row="1" CornerRadius="8" Padding="12" Margin="8" BorderBrush="#E0E0E0" BorderThickness="1" Height="125" Background="#FFF8F8F8">
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="80"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Text="Ready For Pickup" VerticalAlignment="Center" FontSize="18"/>
+                                                    <TextBlock Grid.Column="1" Text="{Binding AllReadyOrders}" FontSize="22" FontWeight="Bold" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                                                </Grid>
+                                            </Border>
+
+                                            <!-- Row 3 -->
+                                            <Border Grid.Column="0" Grid.Row="2" CornerRadius="8" Padding="12" Margin="8" BorderBrush="#E0E0E0" BorderThickness="1" Height="125" Background="#FFF8F8F8">
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="140"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Text="Best Selling Platform" VerticalAlignment="Center" FontSize="18"/>
+                                                    <Grid Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                                        <Image Source="{Binding AllBestSellingPlatformUrl, FallbackValue={x:Null}, TargetNullValue={x:Null}}" 
+                                                               Width="80" Height="40" 
+                                                               Stretch="Uniform" 
+                                                               RenderOptions.BitmapScalingMode="HighQuality"
+                                                               Visibility="{Binding AllBestSellingPlatformUrl, Converter={StaticResource StringNotEmptyToVisibilityConverter}}"/>
+                                                        <TextBlock Text="{Binding AllBestSellingPlatform}" 
+                                                                   FontSize="18" FontWeight="Bold" 
+                                                                   HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                                   Visibility="{Binding AllBestSellingPlatformUrl, Converter={StaticResource InvertBooleanToVisibilityConverter}}"/>
+                                                    </Grid>
+                                                </Grid>
+                                            </Border>
+                                            <Border Grid.Column="1" Grid.Row="2" CornerRadius="8" Padding="12" Margin="8" BorderBrush="#E0E0E0" BorderThickness="1" Height="125" Background="#FFF8F8F8">
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="140"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Text="Total Revenue" VerticalAlignment="Center" FontSize="18"/>
+                                                    <TextBlock Grid.Column="1" FontSize="22" FontWeight="Bold" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                                        <TextBlock.Text>
+                                                            <MultiBinding StringFormat="{}{0} {1:F2}">
+                                                                <Binding Path="Currency"/>
+                                                                <Binding Path="AllTotalRevenue"/>
+                                                            </MultiBinding>
+                                                        </TextBlock.Text>
+                                                    </TextBlock>
+                                                </Grid>
+                                            </Border>
+                                        </Grid>
+                                    </ScrollViewer>
+
+                                </Grid>
+                            </TabItem>
+                        </TabControl>
+                    </Border>
+                </Grid>
+            </Grid>
+
+            <!-- Loading Overlay for X-Report Printing -->
+           <!-- <Grid Grid.ColumnSpan="2" 
+                  Visibility="{Binding IsPrintingXReport, Converter={StaticResource BooleanToVisibilityConverter}}" 
+                  Background="#80BDBDBD" Panel.ZIndex="9999">
+                <controls:LoadingIndicator HorizontalAlignment="Center" 
+                                           VerticalAlignment="Center" 
+                                           ProgressRingSize="70"/>
+            </Grid> -->
+        </Grid>
+    </materialDesign:DialogHost>
+</Page>

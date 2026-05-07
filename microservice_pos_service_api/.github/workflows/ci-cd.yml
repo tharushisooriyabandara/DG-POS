@@ -1,0 +1,132 @@
+name: microservice_user_service_api
+on:
+  push:
+    branches:
+      - super_dev_prod
+      - super_dev_qa
+      - super_dev
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      PROJECT_NAME: "microservice_pos_service_api"
+    steps:
+      - name: Set Environment Variables
+        run: |
+          if [[ $GITHUB_REF == "refs/heads/super_dev" ]]; then
+            echo "ENVIRONMENT=dev" >> $GITHUB_ENV
+            echo "PROJECT_NAME=github/${{ env.PROJECT_NAME }}" >> $GITHUB_ENV
+            echo "EC2_USER=${{ secrets.DEV_AWS_EC2_USER }}" >> $GITHUB_ENV
+            echo "EC2_INSTANCE_ID=${{ secrets.DEV_AWS_EC2_INSTANCE_ID }}" >> $GITHUB_ENV
+            echo "PASSPORT=test_passport_keys" >> $GITHUB_ENV
+            echo "PARAMATER=pos_service_dev" >> $GITHUB_ENV
+            echo 'INSTALL_OPTIONS="--no-interaction --prefer-dist --optimize-autoloader"' >> $GITHUB_ENV
+            echo "MIDDLEWARE=/var/www/github/microservice_delivergate_api/current" >> $GITHUB_ENV
+          elif [[ $GITHUB_REF == "refs/heads/super_dev_qa" ]]; then
+            echo "ENVIRONMENT=qa" >> $GITHUB_ENV
+            echo "PROJECT_NAME=github/qa/${{ env.PROJECT_NAME }}" >> $GITHUB_ENV
+            echo "EC2_USER=${{ secrets.QA_AWS_EC2_USER }}" >> $GITHUB_ENV
+            echo "EC2_INSTANCE_ID=${{ secrets.QA_AWS_EC2_INSTANCE_ID }}" >> $GITHUB_ENV
+            echo "PASSPORT=test_passport_keys" >> $GITHUB_ENV
+            echo "PARAMATER=pos_service_qa" >> $GITHUB_ENV
+            echo 'INSTALL_OPTIONS="--no-interaction --prefer-dist --optimize-autoloader --no-dev"' >> $GITHUB_ENV
+            echo "MIDDLEWARE=/var/www/github/qa/microservice_delivergate_api/current" >> $GITHUB_ENV
+          elif [[ $GITHUB_REF == "refs/heads/super_dev_prod" ]]; then
+            echo "ENVIRONMENT=prod" >> $GITHUB_ENV
+            echo "PROJECT_NAME=github/${{ env.PROJECT_NAME }}" >> $GITHUB_ENV
+            echo "EC2_USER=${{ secrets.PROD_AWS_EC2_USER }}" >> $GITHUB_ENV
+            echo "EC2_INSTANCE_ID=${{ secrets.PROD_AWS_EC2_INSTANCE_ID }}" >> $GITHUB_ENV
+            echo "PASSPORT=passport_keys" >> $GITHUB_ENV
+            echo "PARAMATER=pos_service_prod" >> $GITHUB_ENV
+            echo 'INSTALL_OPTIONS="--no-interaction --prefer-dist --optimize-autoloader --no-dev"' >> $GITHUB_ENV
+            echo "MIDDLEWARE=/var/www/github/microservice_delivergate_api/current" >> $GITHUB_ENV
+          fi
+      - name: Checkout Code
+        uses: actions/checkout@v2
+      - name: Get GitHub Actions runner IP
+        id: get_runner_ip
+        run: echo "RUNNER_IP=$(curl -s https://checkip.amazonaws.com)" >> $GITHUB_ENV
+      - name: Generate Timestamp
+        id: generate-timestamp
+        run: echo "TIMESTAMP=$(date +%Y%m%d%H%M%S)" >> $GITHUB_ENV
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.5.3
+        with:
+          ssh-private-key: ${{ secrets.AWS_SSH_PRIVATE_KEY }}
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+      - name: Get EC2 public IP
+        run: |
+          PUBLIC_IP=$(aws ec2 describe-instances --instance-ids ${{ env.EC2_INSTANCE_ID }} --query "Reservations[0].Instances[0].PublicIpAddress" --output text)
+          echo "EC2_PUBLIC_IP=$PUBLIC_IP" >> $GITHUB_ENV
+          SECURITY_GROUP_ID=$(aws ec2 describe-instances --instance-ids ${{ env.EC2_INSTANCE_ID }} --query "Reservations[].Instances[].SecurityGroups[0].GroupId" --output text)
+          echo "SECURITY_GROUP_ID=$SECURITY_GROUP_ID" >> $GITHUB_ENV
+      - name: Allow SSH access from GitHub Actions runner IP
+        run: |
+          aws ec2 authorize-security-group-ingress --group-id ${{ env.SECURITY_GROUP_ID }} --protocol tcp --port 22 --cidr ${{ env.RUNNER_IP }}/32
+      - name: Prepare EC2 Deployment Directory
+        env:
+          EC2_IP: ${{ env.EC2_PUBLIC_IP }}
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ env.EC2_USER }}@${{ env.EC2_IP }} << 'EOF'
+            set -e
+            # Define directories
+            PROJECT_BASE_DIR="/var/www/${{ env.PROJECT_NAME }}"
+            CURRENT_DIR="${PROJECT_BASE_DIR}/current"
+            RELEASE_DIR="${PROJECT_BASE_DIR}/releases/release_${{ env.TIMESTAMP }}"
+            # Create project base directory
+            if [ ! -d "$PROJECT_BASE_DIR" ]; then
+                sudo mkdir -p "$PROJECT_BASE_DIR"
+            fi
+            sudo chown -R $USER:$USER $PROJECT_BASE_DIR
+            mkdir -p "$RELEASE_DIR"
+            if [ ! -d "$CURRENT_DIR" ]; then
+              mkdir -p $CURRENT_DIR
+            fi
+          EOF
+      - name: Rsync Files
+        env:
+          EC2_IP: ${{ env.EC2_PUBLIC_IP }}
+        run: |
+          rsync -avz --exclude='.git' --exclude='node_modules' . ${{ env.EC2_USER }}@${{ env.EC2_IP }}:/var/www/${{ env.PROJECT_NAME }}/releases/release_${{ env.TIMESTAMP }}
+      - name: Finalize Deployment on EC2
+        env:
+          EC2_IP: ${{ env.EC2_PUBLIC_IP }}
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ env.EC2_USER }}@${{ env.EC2_IP }} << 'EOF'
+            set -e
+            PROJECT_BASE_DIR="/var/www/${{ env.PROJECT_NAME }}"
+            RELEASE_DIR="${PROJECT_BASE_DIR}/releases/release_${{ env.TIMESTAMP }}"
+            CURRENT_DIR="${PROJECT_BASE_DIR}/current"
+            cd ${RELEASE_DIR}
+            chmod +x ./scripts/after_install.sh
+            ./scripts/after_install.sh ${RELEASE_DIR} ${{ secrets.AWS_REGION }} ${{ env.PASSPORT }} ${{ env.PARAMATER }} ${{ env.INSTALL_OPTIONS }} ${{ env.ENVIRONMENT }} ${{ env.MIDDLEWARE }}
+            # Remove old symlinks and create a new one
+            find ${CURRENT_DIR} -maxdepth 1 -type l -exec rm -f {} \;
+            ln -sfn ${RELEASE_DIR} ${CURRENT_DIR}
+            ln -sfn ${RELEASE_DIR}/public ${CURRENT_DIR}/public
+            # Remove old releases
+            cd ${PROJECT_BASE_DIR}/releases
+            if [[ ${{ env.ENVIRONMENT }} == "prod" ]]; then
+              ls -t | tail -n +3 | xargs rm -rf
+            else
+              ls -t | tail -n +2 | xargs rm -rf
+            fi
+            # Restart the appropriate web server
+            if command -v nginx >/dev/null 2>&1; then
+              sudo systemctl restart nginx
+            elif command -v apache2 >/dev/null 2>&1; then
+              sudo systemctl restart apache2
+            else
+              echo "Neither Nginx nor Apache2 is installed"
+              exit 1
+            fi
+          EOF
+      - name: Revoke SSH access
+        if: always()
+        run: |
+          aws ec2 revoke-security-group-ingress --group-id ${{ env.SECURITY_GROUP_ID }} --protocol tcp --port 22 --cidr ${{ env.RUNNER_IP }}/32

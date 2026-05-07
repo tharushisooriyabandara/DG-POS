@@ -1,0 +1,1 @@
+ALTER TABLE `dg_pos_tables` DROP COLUMN `ongoing_order_id`;

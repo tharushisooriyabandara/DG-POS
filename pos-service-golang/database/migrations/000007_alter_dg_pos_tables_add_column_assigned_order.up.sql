@@ -1,0 +1,2 @@
+ALTER TABLE `dg_pos_tables`
+ADD `ongoing_order_id` BIGINT UNSIGNED DEFAULT NULL;

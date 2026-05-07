@@ -1,0 +1,197 @@
+<UserControl x:Class="POS_UI.View.TransactionDialog"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             xmlns:local="clr-namespace:POS_UI.View"
+             xmlns:converters="clr-namespace:POS_UI.Converters"
+             mc:Ignorable="d"
+             d:DesignHeight="450" d:DesignWidth="500"
+              MinHeight="200" MinWidth="450">
+    <UserControl.Resources>
+        <converters:CurrencyFormatConverter x:Key="CurrencyFormatConverter" />
+        <converters:DateTimeFormatConverter x:Key="DateTimeFormatConverter" />
+        <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+        <converters:CountryBasedDateTimeConverter x:Key="CountryBasedDateTimeConverter" />
+        <converters:StringToVisibilityConverter x:Key="StringToVisibilityConverter"/>
+    </UserControl.Resources>
+    <Border Background="White" CornerRadius="10" Padding="15">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <!-- Header with Order Info -->
+            <Grid Grid.Row="0" Margin="0,0,0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <StackPanel Orientation="Vertical">
+                    <TextBlock Text="Order Transactions" FontSize="20" TextAlignment="Center" FontWeight="Bold" Foreground="#FF434343"/>
+                    <StackPanel Orientation="Vertical">
+                        <StackPanel Orientation="Horizontal">
+                            <Button Style="{StaticResource MaterialDesignOutlinedButton}" Padding="6"  Margin="0,-42,10,0"
+                                    Command="{Binding BackToOrderCommand}">
+                                <materialDesign:PackIcon Kind="ArrowBackCircle" Width="22" Height="20"/>
+                            </Button>
+                            <TextBlock Text="Order " FontSize="18" FontWeight="Bold" VerticalAlignment="Center" Margin="0,0,0,0"/>
+                            <TextBlock Text="{Binding OrderNumber, Mode=OneWay}" FontSize="18" FontWeight="Bold" VerticalAlignment="Center" Margin="0,0,30,0"/>
+                        </StackPanel>
+                        <TextBlock FontSize="12" Foreground="#666" Margin="45,-2,0,0"
+                                   Text="{Binding Order.OrderSessionId, StringFormat=Session # {0}}">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Order.OrderSessionId}" Value="{x:Null}">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding Order.OrderSessionId}" Value="0">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                    </StackPanel>
+                </StackPanel>
+              <!--  <Button Grid.Column="1" Style="{StaticResource MaterialDesignOutlinedButton}" HorizontalContentAlignment="Right"
+                        Height="37" Width="105">
+                    <TextBlock Text="{Binding TableButtonText, Mode=OneWay}" />
+                </Button>-->
+                <!-- Close Button -->
+                <Button Grid.Column="2" Style="{StaticResource MaterialDesignToolButton}"
+                        Command="{x:Static materialDesign:DialogHost.CloseDialogCommand}"
+                        VerticalAlignment="Top" Margin="5,0,-5,0"
+                        ToolTip="Close">
+                    <materialDesign:PackIcon Kind="Close" Width="24" Height="24"/>
+                </Button>
+            </Grid>
+
+            <!-- Order Info Row -->
+            <Grid Grid.Row="1" Margin="0,0,0,15" VerticalAlignment="Center">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="90"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="50"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Shipping Method: Yellow background, black foreground -->
+                <Border Grid.Column="0" Background="#FFFFA600" CornerRadius="6" Padding="8,4" VerticalAlignment="Center">
+                    <TextBlock Text="{Binding ShippingMethodText}" Foreground="Black"  FontWeight="Bold" TextAlignment="Center" />
+                </Border>
+                <Border Grid.Column="1" CornerRadius="6" Margin="5,0,5,0" Background="#FFE6E6E6" Padding="8,4" VerticalAlignment="Center">
+                    <TextBlock Text="{Binding DeliveryPlatformName}"  Foreground="Black"  FontWeight="Bold" TextAlignment="Center" TextWrapping="Wrap"/>
+                </Border>
+
+                <!-- Payment Status: Red background, white foreground; hide when empty -->
+                <Border Grid.Column="2" Background="Red" CornerRadius="6" Padding="8,4" Margin="0,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Right"
+                        Visibility="{Binding PaymentStatus, Converter={StaticResource StringToVisibilityConverter}}">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="{Binding PaymentStatus}" Foreground="White" FontWeight="Bold"/>
+                        <TextBlock Text="{Binding PaymentMode, StringFormat=' - {0}'}" 
+                        Foreground="White" FontWeight="Bold"
+                        Visibility="{Binding PaymentStatus, Converter={StaticResource StringToVisibilityConverter}, ConverterParameter=PAID|PAID -}"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Platform Logo (if available) -->
+                <Image Grid.Column="3" Height="32" Stretch="Uniform" Width="50" Margin="0,0,8,0"
+                       Source="{Binding PlatformLogo}" HorizontalAlignment="Right"
+                       Visibility="{Binding PlatformLogo, Converter={StaticResource StringToVisibilityConverter}}"/>
+            </Grid>
+
+            <!-- Table Header -->
+            <Grid Grid.Row="2" Margin="0,0,0,5">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="100"/>
+                    <ColumnDefinition Width="120"/>
+                    <ColumnDefinition Width="100"/>
+                    <ColumnDefinition Width="150"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Text="Type" FontWeight="Bold" FontSize="13" VerticalAlignment="Center" Foreground="#1976D2"/>
+                <TextBlock Grid.Column="1" Text="Amount" FontWeight="Bold" FontSize="13" VerticalAlignment="Center" Foreground="#1976D2"/>
+                <TextBlock Grid.Column="2" Text="Mode" FontWeight="Bold" FontSize="13" VerticalAlignment="Center" Foreground="#1976D2"/>
+                <TextBlock Grid.Column="3" Text="Date" FontWeight="Bold" FontSize="13" VerticalAlignment="Center" Foreground="#1976D2"/>
+            </Grid>
+
+            <!-- Separator -->
+            <Separator Grid.Row="2" VerticalAlignment="Bottom" Margin="0,0,0,-5"/>
+
+            <!-- Transactions List -->
+            <ScrollViewer Grid.Row="3" VerticalScrollBarVisibility="Auto" MaxHeight="300">
+                <ItemsControl ItemsSource="{Binding TransactionItems}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border BorderBrush="#EEE" BorderThickness="0,0,0,1" Padding="5,12">
+                                <StackPanel>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="100"/>
+                                            <ColumnDefinition Width="120"/>
+                                            <ColumnDefinition Width="100"/>
+                                            <ColumnDefinition Width="150"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0" Text="{Binding TransactionType}" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Column="1" Text="{Binding TransactionAmount, Converter={StaticResource CurrencyFormatConverter}}" VerticalAlignment="Center" FontWeight="SemiBold"/>
+                                        <TextBlock Grid.Column="2" Text="{Binding TransactionMode}" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Column="3" Text="{Binding CreatedAt, Converter={StaticResource CountryBasedDateTimeConverter}}" VerticalAlignment="Center" Foreground="#666"/>
+                                        <Button Grid.Column="4" 
+                                                Style="{StaticResource MaterialDesignFlatButton}"
+                                                Command="{Binding DataContext.ToggleExpandCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                CommandParameter="{Binding}"
+                                                Padding="8,4"
+                                                VerticalAlignment="Center"
+                                                Visibility="{Binding HasReason, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                            <Grid>
+                                                <materialDesign:PackIcon Kind="ChevronDown" Foreground="Black"
+                                                                         Width="20" Height="20"
+                                                                         Visibility="{Binding IsExpanded, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter=Invert}"/>
+                                                <materialDesign:PackIcon Kind="ChevronUp" Foreground="Black"
+                                                                         Width="20" Height="20"
+                                                                         Visibility="{Binding IsExpanded, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                                            </Grid>
+                                        </Button>
+                                    </Grid>
+                                    <!-- Expanded Reason Section -->
+                                    <Border Margin="0,8,0,0" 
+                                            Padding="10,8" 
+                                            Background="#F5F5F5" 
+                                            BorderBrush="#DDD" 
+                                            BorderThickness="0,1,0,0"
+                                            Visibility="{Binding IsExpanded, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                        <StackPanel>
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Grid.Column="0" Text="Reason:" FontWeight="Bold" FontSize="13" Margin="0,0,5,4" Foreground="#1976D2"/>
+                                            <TextBlock Grid.Column="1" Text="{Binding Reason}" FontSize="13" TextWrapping="Wrap"/>
+                                            </Grid>
+                                        </StackPanel>
+                                    </Border>
+                                </StackPanel>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+
+            <!-- Empty State -->
+            <TextBlock Grid.Row="3" Text="No transactions found for this order." 
+                       HorizontalAlignment="Center" VerticalAlignment="Center"
+                       Foreground="#999" FontSize="14"
+                       Visibility="{Binding HasNoTransactions, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+        </Grid>
+    </Border>
+</UserControl>

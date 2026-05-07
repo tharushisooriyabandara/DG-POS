@@ -1,0 +1,135 @@
+# Build Folders
+bin/
+obj/
+
+# User-specific files
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Visual Studio Code
+.vscode/
+.vs/
+
+# Rider
+.idea/
+*.sln.iml
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# NuGet
+*.nupkg
+# NuGet Packages folder can be ignored if using package restore
+packages/
+# Project lock files
+project.lock.json
+project.assets.json
+
+# Logs
+*.log
+
+# Others
+*.vspscc
+*.vssscc
+_ReSharper*/
+[Tt]est[Rr]esult*/
+*.dbmdl
+*.bak
+*.cache
+*.pdb
+*.mdb
+*.opendb
+*.VC.db
+*.VC.VC.opendb
+
+# WPF generated files
+*.g.cs
+*.g.i.cs
+*.baml
+*.iobj
+*.ipdb
+*.ilk
+*.obj
+*.exe
+*.dll
+*.appx
+*.appxbundle
+*.msix
+*.msixbundle
+*.vsix
+*.psess
+*.vsp
+*.vspx
+*.vsix
+*.cachefile
+*.db
+*.sdf
+*.cache
+*.suo
+*.ntvs_analysis.dat
+*.njsproj.user
+*.psess
+*.vsp
+*.pfx
+*.publishsettings
+
+# Backup & temp
+*~
+*.tmp
+*.temp
+
+# Local test results
+TestResults/
+
+# Windows image file caches
+Thumbs.db
+ ehthumbs.db
+
+# Windows Installer files
+*.cab
+*.msi
+*.msm
+*.msp
+
+# Web publish folder
+publish/
+
+# Releases
+Releases/
+artifacts/
+
+# Others
+*.swp
+*.swo
+
+# Ignore images if not needed in repo
+# Images/ 
+
+# Firebase credentials
+testdelivergate-firebase-adminsdk-key.json
+delivergate-uk-firebase-adminsdk-key.json
+qadelivergate-firebase-adminsdk-key.json
+google-maps-api-key.txt
+
+# Note: Settings.settings is now tracked to ensure Settings.Designer.cs is generated
+# Sensitive values should be managed in user.config or overridden at runtime
+
+# Ignore settings file with sensitive credentials
+Properties/Settings.settings
+
+# Environment files
+.env
+.env.*
+*.env
+
+# Node tooling (semantic-release)
+node_modules/
+
+# Encrypted files
+*.enc
+
+# App settings (local/secret)
+appsettings.*

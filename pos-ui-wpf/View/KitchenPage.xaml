@@ -1,0 +1,777 @@
+<Page x:Class="POS_UI.View.KitchenPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+      xmlns:vm="clr-namespace:POS_UI.ViewModels"
+      xmlns:local="clr-namespace:POS_UI"
+      xmlns:converters="clr-namespace:POS_UI.Converters"
+      xmlns:models="clr-namespace:POS_UI.Models"
+      xmlns:controls="clr-namespace:POS_UI.View.Controls"
+      
+      Title="Kitchen">
+    <Page.DataContext>
+        <vm:KitchenViewModel />
+    </Page.DataContext>
+    <Page.Resources>
+        <converters:StringToColorConverter x:Key="StringToColorConverter"/>
+        <converters:StringToForegroundConverter x:Key="StringToForegroundConverter"/>
+        <converters:TableStatusVisibilityConverter x:Key="TableStatusVisibilityConverter"/>
+        <converters:EnumToBooleanConverter x:Key="EnumToBooleanConverter"/>
+        <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+        <converters:CountryBasedDateTimeConverter x:Key="CountryBasedDateTimeConverter"/>
+        <converters:DateTimeFormatConverter x:Key="DateTimeFormatConverter"/>
+    </Page.Resources>
+    <Grid>
+    <materialDesign:DialogHost Identifier="RootDialog" Style="{StaticResource MaterialDesignEmbeddedDialogHost}">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="130"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <!-- Sidebar Placeholder -->
+            <local:Sidebar x:Name="SidebarControl" Grid.Column="0"/>
+            <StackPanel Grid.Column="1" Background="#F8F8F8">
+                <!-- Header with modern refresh button -->
+                <Grid Margin="10,5,20,10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    
+                    <!-- Left side - Title section and Platform ComboBox -->
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                        <Border Background="#2196F3" Width="15" Height="60" CornerRadius="5"/>
+                        <StackPanel Orientation="Vertical" Margin="10">
+                            <TextBlock Text="Live Kitchen" FontSize="22" FontWeight="Bold" Margin="0,0,0,2"/>
+                            <TextBlock Text="Manage Kitchen Updates" FontSize="15"/>
+                        </StackPanel>
+                        <ComboBox Width="170" 
+                                  Margin="20,0,0,0" 
+                                  ItemsSource="{Binding Platforms}" 
+                                  SelectedItem="{Binding SelectedPlatform}" 
+                                  Background="White" 
+                                  FontSize="17" 
+                                  BorderBrush="Transparent" 
+                                  Height="35" 
+                                  SelectionChanged="ComboBox_SelectionChanged"/>
+                    </StackPanel>
+                    
+                    <!-- Right side - Modern refresh button -->
+                    <Button Grid.Column="1" 
+                            Command="{Binding RefreshOrdersCommand}"
+                            Style="{StaticResource MaterialDesignRaisedButton}"
+                            Background="#2196F3" 
+                            Foreground="White"
+                            Padding="16,8"
+                            Margin="0,0,0,0"
+                            VerticalAlignment="Center"
+                            ToolTip="Refresh kitchen orders">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="Refresh" 
+                                                     Width="18" 
+                                                     Height="18" 
+                                                     Margin="0,0,8,0"
+                                                     VerticalAlignment="Center"/>
+                            <TextBlock Text="Refresh" 
+                                       FontSize="14" 
+                                       FontWeight="SemiBold"
+                                       VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                </Grid>
+                <StackPanel Orientation="Horizontal" Margin="0,0" HorizontalAlignment="Left" Width="Auto" >
+               
+                    <!-- Queue -->
+                    <StackPanel Width="295" Margin="0,0,10,0">
+                        <Border Background="#F8E1E7" CornerRadius="8" Padding="8" Margin="10,5,10,10" Width="275">
+                            <TextBlock Text="Queue" FontWeight="Bold" Foreground="#B23A48" FontSize="16"/>
+                        </Border>
+                        <Grid Height="530" Width="275">
+                        <ScrollViewer x:Name="QueueScrollViewer" VerticalScrollBarVisibility="Hidden">
+                            <Grid>
+                                <controls:LoadingIndicator HorizontalAlignment="Center" 
+                                                           VerticalAlignment="Center" 
+                                                           ProgressRingSize="50"
+                                                           Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                                
+                                                                 <!-- No Orders Message -->
+                                 <TextBlock Text="No orders available" 
+                                            HorizontalAlignment="Center" 
+                                            VerticalAlignment="Center" 
+                                            Foreground="#CCCCCC" 
+                                            FontSize="18" 
+                                            FontStyle="Italic">
+                                     <TextBlock.Style>
+                                         <Style TargetType="TextBlock">
+                                             <Setter Property="Visibility" Value="Collapsed"/>
+                                             <Style.Triggers>
+                                                 <MultiDataTrigger>
+                                                     <MultiDataTrigger.Conditions>
+                                                         <Condition Binding="{Binding IsLoading}" Value="False"/>
+                                                         <Condition Binding="{Binding QueueOrders.Count}" Value="0"/>
+                                                     </MultiDataTrigger.Conditions>
+                                                     <Setter Property="Visibility" Value="Visible"/>
+                                                 </MultiDataTrigger>
+                                             </Style.Triggers>
+                                         </Style>
+                                     </TextBlock.Style>
+                                 </TextBlock>
+                                
+                                <ItemsControl ItemsSource="{Binding QueueOrders}" Width="275"
+                                            Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter=Invert}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Background="#FAFAFA" CornerRadius="8" Padding="5" Margin="10" Width="245" MouseLeftButtonUp="OrderItem_Click">
+                                        <Grid VerticalAlignment="Center">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                        
+                                                    </Grid.ColumnDefinitions>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto"/>
+                                            </Grid.RowDefinitions>
+                                            <!-- Platform Badge -->
+                                            <Border Grid.Column="0" Margin="0,0,0,3" Grid.Row="0" CornerRadius="4" Padding="6,2" VerticalAlignment="Center" HorizontalAlignment="Left">
+                                                <Grid>
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="Auto"/>
+                                                            <ColumnDefinition Width="*"/>
+                                                        </Grid.ColumnDefinitions>
+
+                                                    <Image Grid.Column="0" Width="22" Height="22"
+                                                           Source="{Binding PlatformLogo}"
+                                                           Margin="0,0,4,0">
+                                                        <Image.Style>
+                                                            <Style TargetType="Image">
+                                                                <Setter Property="Visibility" Value="Visible"/>
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding Source, RelativeSource={RelativeSource Self}}" Value="{x:Null}">
+                                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </Image.Style>
+                                                        <Image.ToolTip>
+                                                            <TextBlock Text="{Binding PlatformName}"/>
+                                                        </Image.ToolTip>
+                                                    </Image>
+                                                            <Border Grid.Column="1" CornerRadius="4" Background="#FFE6E6E6" Padding="5,1">
+                                                                <TextBlock Text="{Binding DeliveryPlatfornName}"
+                                                                           FontWeight="SemiBold"
+                                                                           FontSize="12"
+                                                                           TextWrapping="Wrap"
+                                                                           TextTrimming="None"
+                                                                           Foreground="Black"
+                                                                           VerticalAlignment="Center"/>
+                                                            </Border>
+                                                        </Grid>
+                                            </Border>
+                                            <!-- Order Info -->
+                                            <StackPanel Grid.Column="0" Grid.Row="1" Orientation="Vertical" VerticalAlignment="Center">
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <TextBlock Text="{Binding OrderNumber}" FontWeight="Bold" FontSize="16" Margin="0,0,5,0"/>
+                                                        <Border Margin="5,0,0,0" BorderThickness="2" BorderBrush="{Binding OrderTypeDisplay, Converter={StaticResource OrderTypeToBadgeBrushConverter}}" CornerRadius="10" Padding="8,2" VerticalAlignment="Center">
+                                                              <TextBlock Text="{Binding OrderTypeDisplay}" FontSize="11" FontWeight="SemiBold" Foreground="{Binding OrderTypeDisplay, Converter={StaticResource OrderTypeToBadgeBrushConverter}}"/>
+                                                        </Border>
+                                                    </StackPanel>
+                                                    <TextBlock Text="{Binding CreatedAt, Converter={StaticResource CountryBasedDateTimeConverter}}" FontSize="10" Foreground="Gray" Padding="0,0,0,10"/>
+                                            </StackPanel>
+                                            <!-- Total -->
+                                            <TextBlock Grid.Column="1" Text="{Binding DisplayTotal, Converter={StaticResource CurrencyFormatConverter}}" FontWeight="Bold" FontSize="14" VerticalAlignment="Center" Margin="20,0,10,0"/>
+                                            <!-- Arrow Button -->
+                                            <Button Grid.Column="1" Grid.Row="1" Command="{Binding DataContext.MoveToPreparingCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                    CommandParameter="{Binding}"
+                                                    Style="{StaticResource MaterialDesignToolButton}"
+                                                    Width="32" Height="35" ToolTip="Move to Preparing">
+                                                <materialDesign:PackIcon Kind="ArrowRightBold" Width="28" Height="28" Foreground="Red"/>
+                                            </Button>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        </Grid>
+                        </ScrollViewer>
+                        <Border x:Name="QueueBottomFade" VerticalAlignment="Bottom" Height="80" IsHitTestVisible="False">
+                            <Border.Background>
+                                <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                    <GradientStop Color="Transparent" Offset="0"/>
+                                    <GradientStop Color="#D0F8F8F8" Offset="0.5"/>
+                                    <GradientStop Color="#F8F8F8" Offset="1"/>
+                                </LinearGradientBrush>
+                            </Border.Background>
+                        </Border>
+                        </Grid>
+                        
+                    </StackPanel>
+                   
+                    <!-- Preparing -->
+                    <StackPanel Width="295" Margin="0,0,10,0">
+                        <Border Background="#FFE6B3" CornerRadius="8" Padding="8" Margin="10,5,10,10" Width="275">
+                            <TextBlock Text="Preparing" FontWeight="Bold" Foreground="#E6A100" FontSize="16"/>
+                        </Border>
+                        <Grid Height="530" Width="275">
+                        <ScrollViewer x:Name="PreparingScrollViewer" VerticalScrollBarVisibility="Hidden">
+                            <Grid>
+                                <controls:LoadingIndicator HorizontalAlignment="Center" 
+                                                           VerticalAlignment="Center" 
+                                                           ProgressRingSize="50"
+                                                           Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                                
+                                                                 <!-- No Orders Message -->
+                                 <TextBlock Text="No orders available" 
+                                            HorizontalAlignment="Center" 
+                                            VerticalAlignment="Center" 
+                                            Foreground="#CCCCCC" 
+                                            FontSize="18" 
+                                            FontStyle="Italic">
+                                     <TextBlock.Style>
+                                         <Style TargetType="TextBlock">
+                                             <Setter Property="Visibility" Value="Collapsed"/>
+                                             <Style.Triggers>
+                                                 <MultiDataTrigger>
+                                                     <MultiDataTrigger.Conditions>
+                                                         <Condition Binding="{Binding IsLoading}" Value="False"/>
+                                                         <Condition Binding="{Binding PreparingOrders.Count}" Value="0"/>
+                                                     </MultiDataTrigger.Conditions>
+                                                     <Setter Property="Visibility" Value="Visible"/>
+                                                 </MultiDataTrigger>
+                                             </Style.Triggers>
+                                         </Style>
+                                     </TextBlock.Style>
+                                 </TextBlock>
+                                
+                                <ItemsControl ItemsSource="{Binding PreparingOrders}" Width="275"
+                                            Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter=Invert}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Background="#FAFAFA" CornerRadius="8" Padding="5" Margin="0,10,12,10" Width="245" MouseLeftButtonUp="OrderItem_Click">
+                                        <Grid VerticalAlignment="Center">
+                                            <Grid.ColumnDefinitions>
+                                                <!--<ColumnDefinition Width="Auto"/>-->
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto"/>
+                                            </Grid.RowDefinitions>
+
+                                                <!-- Left Arrow Button -->
+                                                <!--<Button Grid.Column="0" Command="{Binding DataContext.MoveToQueueCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                    CommandParameter="{Binding}"
+                                                    Style="{StaticResource MaterialDesignToolButton}"
+                                                    Width="28" Height="32" ToolTip="Move to Queue" Margin="0,0,10,0">
+                                                    <materialDesign:PackIcon Kind="ArrowLeftBold" Width="24" Height="24" Foreground="#B23A48"/>
+                                                </Button>-->
+                                                <!-- Main Content -->
+                                                
+                                                                                                    <!-- Platform/OrderType Badge -->
+                                                    <Border Grid.Column="0" Grid.Row="0" Margin="0,0,0,3" CornerRadius="4" Padding="6,2" VerticalAlignment="Center" HorizontalAlignment="Left">
+                                                        <Grid>
+                                                            <Grid.ColumnDefinitions>
+                                                                <ColumnDefinition Width="Auto"/>
+                                                                <ColumnDefinition Width="*"/>
+                                                            </Grid.ColumnDefinitions>
+                                                        <Image Grid.Column="0" Width="22" Height="22"
+                                                               Source="{Binding PlatformLogo}"
+                                                               Margin="0,0,4,0">
+                                                            <Image.Style>
+                                                                <Style TargetType="Image">
+                                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                                    <Style.Triggers>
+                                                                        <DataTrigger Binding="{Binding Source, RelativeSource={RelativeSource Self}}" Value="{x:Null}">
+                                                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                                                        </DataTrigger>
+                                                                    </Style.Triggers>
+                                                                </Style>
+                                                            </Image.Style>
+                                                            <Image.ToolTip>
+                                                                <TextBlock Text="{Binding PlatformName}"/>
+                                                            </Image.ToolTip>
+                                                        </Image>
+                                                            <Border Grid.Column="1" CornerRadius="4" Background="#FFE6E6E6" Padding="5,1">
+                                                                <TextBlock Text="{Binding DeliveryPlatfornName}" 
+                                                                            FontWeight="SemiBold" 
+                                                                            FontSize="12"
+                                                                           TextWrapping="Wrap" TextTrimming="None"
+                                                                            Foreground="Black"
+                                                                            VerticalAlignment="Center"/>    
+                                                            </Border>
+                                                        </Grid>
+                                                </Border>
+                                                    <StackPanel Grid.Column="0" Grid.Row="1" Orientation="Vertical" VerticalAlignment="Center">
+                                                        <StackPanel Orientation="Horizontal">
+                                                            <TextBlock Text="{Binding OrderNumber}" FontWeight="Bold" FontSize="16" Margin="0,0,5,0"/>
+                                                            <Border Margin="5,0,0,0" BorderThickness="2" BorderBrush="{Binding OrderTypeDisplay, Converter={StaticResource OrderTypeToBadgeBrushConverter}}" CornerRadius="10" Padding="8,2" VerticalAlignment="Center">
+                                                                <TextBlock Text="{Binding OrderTypeDisplay}" FontSize="11" FontWeight="SemiBold" Foreground="{Binding OrderTypeDisplay, Converter={StaticResource OrderTypeToBadgeBrushConverter}}"/>
+                                                            </Border>
+                                                        </StackPanel>
+
+                                                        <TextBlock Text="{Binding CreatedAt, Converter={StaticResource CountryBasedDateTimeConverter}}" FontSize="10" Foreground="Gray"/>
+                                                    </StackPanel>
+                                                    <TextBlock Grid.Column="1" Text="{Binding DisplayTotal, Converter={StaticResource CurrencyFormatConverter}}" FontWeight="Bold" FontSize="14" HorizontalAlignment="Right" Margin="30,7,0,0"/>
+                                                
+                                              
+                                                 <!-- Right Arrow Button (Move to Ready) -->
+                                            <Button Grid.Column="1" Grid.Row="1" Command="{Binding DataContext.MoveToReadyCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                    CommandParameter="{Binding}"
+                                                    Style="{StaticResource MaterialDesignToolButton}"
+                                                    Width="32" Height="35" ToolTip="Move to Ready" Margin="10,0,0,0">
+                                                <materialDesign:PackIcon Kind="ArrowRightBold" Width="28" Height="28" Foreground="Red"/>
+                                            </Button>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </Grid>
+                        </ScrollViewer>
+                        <Border x:Name="PreparingBottomFade" VerticalAlignment="Bottom" Height="80" IsHitTestVisible="False">
+                            <Border.Background>
+                                <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                    <GradientStop Color="Transparent" Offset="0"/>
+                                    <GradientStop Color="#D0F8F8F8" Offset="0.5"/>
+                                    <GradientStop Color="#F8F8F8" Offset="1"/>
+                                </LinearGradientBrush>
+                            </Border.Background>
+                        </Border>
+                        </Grid>
+                    </StackPanel>
+
+                    <!-- Ready -->
+                    <StackPanel Width="295" Margin="0,0,10,0">
+                        <Border Background="#E3F2FD" CornerRadius="8" Padding="8" Margin="10,5,10,10" Width="275">
+                            <TextBlock Text="Ready" FontWeight="Bold" Foreground="#1976D2" FontSize="16"/>
+                        </Border>
+                        <Grid Height="530" Width="278" Margin="4,0,0,0">
+                        <ScrollViewer x:Name="ReadyScrollViewer" VerticalScrollBarVisibility="Hidden">
+                            <Grid>
+                                <controls:LoadingIndicator HorizontalAlignment="Center" 
+                                                           VerticalAlignment="Center" 
+                                                           ProgressRingSize="50"
+                                                           Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                                
+                                                                <!-- No Orders Message -->
+                                 <TextBlock Text="No orders available" 
+                                            HorizontalAlignment="Center" 
+                                            VerticalAlignment="Center" 
+                                            Foreground="#CCCCCC" 
+                                            FontSize="18" 
+                                            FontStyle="Italic">
+                                     <TextBlock.Style>
+                                         <Style TargetType="TextBlock">
+                                             <Setter Property="Visibility" Value="Collapsed"/>
+                                             <Style.Triggers>
+                                                 <MultiDataTrigger>
+                                                     <MultiDataTrigger.Conditions>
+                                                         <Condition Binding="{Binding IsLoading}" Value="False"/>
+                                                         <Condition Binding="{Binding ReadyOrders.Count}" Value="0"/>
+                                                     </MultiDataTrigger.Conditions>
+                                                     <Setter Property="Visibility" Value="Visible"/>
+                                                 </MultiDataTrigger>
+                                             </Style.Triggers>
+                                         </Style>
+                                     </TextBlock.Style>
+                                 </TextBlock>
+                                
+                                <ItemsControl ItemsSource="{Binding ReadyOrders}" Width="275"
+                                            Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter=Invert}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Background="#FAFAFA" CornerRadius="8" Padding="0,5,5,5" Margin="0,10,15,10" Width="260" MouseLeftButtonUp="OrderItem_Click">
+                                        <Grid VerticalAlignment="Center">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto"/>
+                                            </Grid.RowDefinitions>
+
+                                            <!-- Left Arrow Button -->
+                                            <Button Grid.Column="0" Command="{Binding DataContext.MoveToPreparingCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                CommandParameter="{Binding}"
+                                                Style="{StaticResource MaterialDesignToolButton}"
+                                                Width="32" Height="35" ToolTip="Move to Preparing" Margin="0,0,8,0">
+                                                <materialDesign:PackIcon Kind="ArrowLeftBold" Width="28" Height="28" Foreground="#B23A48"/>
+                                            </Button>
+                                            <!-- Main Content -->
+                                            
+                                                <!-- Platform/OrderType Badge -->
+                                                    <Border Grid.Column="1" Grid.Row="0" CornerRadius="4" Padding="6,2" VerticalAlignment="Center" HorizontalAlignment="Left">
+                                                        <Grid>
+                                                            <Grid.ColumnDefinitions>
+                                                                <ColumnDefinition Width="Auto"/>
+                                                                <ColumnDefinition Width="*"/>
+                                                            </Grid.ColumnDefinitions>
+                                                            <Image Grid.Column="0" Width="22" Height="22"
+                                                               Source="{Binding PlatformLogo}"
+                                                               Margin="0,0,4,0">
+                                                            <Image.Style>
+                                                                <Style TargetType="Image">
+                                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                                    <Style.Triggers>
+                                                                        <DataTrigger Binding="{Binding Source, RelativeSource={RelativeSource Self}}" Value="{x:Null}">
+                                                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                                                        </DataTrigger>
+                                                                    </Style.Triggers>
+                                                                </Style>
+                                                            </Image.Style>
+                                                            <Image.ToolTip>
+                                                                <TextBlock Text="{Binding PlatformName}"/>
+                                                            </Image.ToolTip>
+                                                        </Image>
+                                                            <Border Grid.Column="1" CornerRadius="4" Background="#FFE6E6E6" Padding="5,1">
+                                                                <TextBlock Text="{Binding DeliveryPlatfornName}" 
+                                                                            FontWeight="SemiBold" 
+                                                                            FontSize="12"
+                                                                           TextWrapping="Wrap" TextTrimming="None"
+                                                                            Foreground="Black"
+                                                                            VerticalAlignment="Center"/>
+                                                            </Border>
+                                                        </Grid>
+                                                </Border>
+                                                    <StackPanel Grid.Column="1" Grid.Row="1" Orientation="Vertical" VerticalAlignment="Center">
+                                                        <StackPanel Orientation="Horizontal">
+                                                            <TextBlock Text="{Binding OrderNumber}" FontWeight="Bold" FontSize="16" Margin="0,0,5,0"/>
+                                                            <Border Margin="5,0,0,0" BorderThickness="2" BorderBrush="{Binding OrderTypeDisplay, Converter={StaticResource OrderTypeToBadgeBrushConverter}}" CornerRadius="10" Padding="8,2" VerticalAlignment="Center">
+                                                                <TextBlock Text="{Binding OrderTypeDisplay}" FontSize="11" FontWeight="SemiBold" Foreground="{Binding OrderTypeDisplay, Converter={StaticResource OrderTypeToBadgeBrushConverter}}"/>
+                                                            </Border>
+                                                        </StackPanel>
+
+                                                        <TextBlock Text="{Binding CreatedAt, Converter={StaticResource CountryBasedDateTimeConverter}}" FontSize="10" Foreground="Gray"/>
+                                                    </StackPanel>
+                                                    <TextBlock Grid.Column="2" Text="{Binding DisplayTotal, Converter={StaticResource CurrencyFormatConverter}}" FontWeight="Bold" FontSize="14" HorizontalAlignment="Right" Margin="30,7,5,0"/>
+                                                
+                                            <!-- Action Buttons Container -->
+                                            <StackPanel Grid.Column="2" Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,0,0">
+                                                <!-- DINE-IN / Table Order Dine-in: Move to Served (arrow) -->
+                                                <Button Command="{Binding DataContext.MoveToServedCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                        CommandParameter="{Binding}"
+                                                        Width="32" Height="35" ToolTip="Move to Served" Margin="0,0,0,0">
+                                                    <Button.Style>
+                                                        <Style TargetType="Button" BasedOn="{StaticResource MaterialDesignToolButton}">
+                                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding ShowMoveToServedInReady}" Value="True">
+                                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </Button.Style>
+                                                    <materialDesign:PackIcon Kind="ArrowRightBold" Width="28" Height="28" Foreground="Red"/>
+                                                </Button>
+
+                                                <!-- TAKEAWAY/COLLECTION and Webshop/UberEats/Deliveroo: Completed. Never shown for table order (platform 8) Dine-in. -->
+                                                <Button Command="{Binding DataContext.MoveToCompletedCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                        CommandParameter="{Binding}" HorizontalAlignment="Right"
+                                                        Width="70" Height="28" ToolTip="Move to Completed" Margin="0,0,0,0">
+                                                    <Button.Style>
+                                                        <Style TargetType="Button">
+                                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                                            <Setter Property="Background" Value="#FF9800"/>
+                                                            <Setter Property="Foreground" Value="White"/>
+                                                            <Setter Property="FontWeight" Value="Bold"/>
+                                                            <Setter Property="BorderBrush" Value="Transparent"/>
+                                                            <Setter Property="FontSize" Value="10"/>
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding PlatformId}" Value="6">
+                                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                                </DataTrigger>
+                                                                <DataTrigger Binding="{Binding PlatformId}" Value="2">
+                                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                                </DataTrigger>
+                                                                <DataTrigger Binding="{Binding PlatformId}" Value="1">
+                                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                                </DataTrigger>
+                                                                <DataTrigger Binding="{Binding OrderType}" Value="{x:Static models:OrderType.TakeAway}">
+                                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                                </DataTrigger>
+                                                                <DataTrigger Binding="{Binding OrderType}" Value="{x:Static models:OrderType.Collection}">
+                                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                                </DataTrigger>
+                                                                <!-- Table order (platform 8) non-Dine-in: show Complete -->
+                                                                <DataTrigger Binding="{Binding PlatformId}" Value="8">
+                                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                                </DataTrigger>
+                                                                <!-- Table order Dine-in: never show Complete (only the Move to Served arrow is shown) -->
+                                                                <DataTrigger Binding="{Binding IsTableOrderDineIn}" Value="True">
+                                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </Button.Style>
+                                                    <TextBlock Text="COMPLETE"/>
+                                                </Button>
+
+                                                <!-- DELIVERY: Move to Served/Dispatched -->
+                                                <Button Command="{Binding DataContext.MoveToDeliveredCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                        CommandParameter="{Binding}"
+                                                        Width="32" Height="35" ToolTip="Move to Dispatched" Margin="0,0,0,0">
+                                                    <Button.Style>
+                                                        <Style TargetType="Button" BasedOn="{StaticResource MaterialDesignToolButton}">
+                                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding OrderType}" Value="{x:Static models:OrderType.Delivery}">
+                                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                                </DataTrigger>
+                                                                <DataTrigger Binding="{Binding PlatformId}" Value="6">
+                                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                                </DataTrigger>
+                                                                <DataTrigger Binding="{Binding PlatformId}" Value="1">
+                                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                                </DataTrigger>
+                                                                <DataTrigger Binding="{Binding PlatformId}" Value="2">
+                                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </Button.Style>
+                                                    <materialDesign:PackIcon Kind="ArrowRightBold" Width="28" Height="28" Foreground="Red"/>
+                                                </Button>
+                                            </StackPanel>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        </Grid>
+                        </ScrollViewer>
+                        <Border x:Name="ReadyBottomFade" VerticalAlignment="Bottom" Height="80" IsHitTestVisible="False">
+                            <Border.Background>
+                                <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                    <GradientStop Color="Transparent" Offset="0"/>
+                                    <GradientStop Color="#D0F8F8F8" Offset="0.5"/>
+                                    <GradientStop Color="#F8F8F8" Offset="1"/>
+                                </LinearGradientBrush>
+                            </Border.Background>
+                        </Border>
+                        </Grid>
+                    </StackPanel>
+                    
+                    <!-- Served -->
+                    <StackPanel Width="295">
+                        <Border Background="#C6F6D5" CornerRadius="8" Padding="8" Width="275" Margin="10,5,10,10">
+                            <TextBlock Text="Served | Dispatched" FontWeight="Bold" Foreground="#059669" FontSize="16"/>
+                        </Border>
+                        <Grid Height="530" Width="278" Margin="4,0,0,0">
+                        <ScrollViewer x:Name="ServedScrollViewer" VerticalScrollBarVisibility="Hidden">
+                            <Grid>
+                                <controls:LoadingIndicator HorizontalAlignment="Center" 
+                                                           VerticalAlignment="Center" 
+                                                           ProgressRingSize="50"
+                                                           Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                                                                 <!-- No Orders Message -->
+                                 <TextBlock Text="No orders available" 
+                                            HorizontalAlignment="Center" 
+                                            VerticalAlignment="Center" 
+                                            Foreground="#CCCCCC" 
+                                            FontSize="18" 
+                                            FontStyle="Italic">
+                                     <TextBlock.Style>
+                                         <Style TargetType="TextBlock">
+                                             <Setter Property="Visibility" Value="Collapsed"/>
+                                             <Style.Triggers>
+                                                 <MultiDataTrigger>
+                                                     <MultiDataTrigger.Conditions>
+                                                         <Condition Binding="{Binding IsLoading}" Value="False"/>
+                                                         <Condition Binding="{Binding ElementName=ServedItems, Path=HasItems}" Value="False"/>
+                                                     </MultiDataTrigger.Conditions>
+                                                     <Setter Property="Visibility" Value="Visible"/>
+                                                 </MultiDataTrigger>
+                                             </Style.Triggers>
+                                         </Style>
+                                     </TextBlock.Style>
+                                 </TextBlock>
+                                
+                                <ItemsControl x:Name="ServedItems" ItemsSource="{Binding ServedOrders}" Background="Transparent" Width="275">
+                                    <ItemsControl.Style>
+                                        <Style TargetType="ItemsControl">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsLoading}" Value="True">
+                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding ElementName=ServedItems, Path=HasItems}" Value="False">
+                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </ItemsControl.Style>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border Background="#FAFAFA" CornerRadius="8" Padding="5" Width="260" Margin="0,10,15,10" MouseLeftButtonUp="OrderItem_Click">
+                                                <Grid VerticalAlignment="Center">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <Grid.RowDefinitions>
+                                                        <RowDefinition Height="Auto"/>
+                                                        <RowDefinition Height="Auto"/>
+                                                    </Grid.RowDefinitions>
+                                                    <Button Grid.Column="0" Command="{Binding DataContext.MoveToReadyCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                             CommandParameter="{Binding}"
+                                                             Style="{StaticResource MaterialDesignToolButton}"
+                                                             Width="32" Height="35" ToolTip="Move to Ready" Margin="0,0,8,0">  
+                                                        <materialDesign:PackIcon Kind="ArrowLeftBold" Width="28" Height="28" Foreground="#B23A48"/>
+                                                    </Button>
+
+                                                    <!-- Platform/OrderType Badge -->
+                                                        <Border Grid.Column="1" Grid.Row="0" CornerRadius="4" Padding="6,2" VerticalAlignment="Center" HorizontalAlignment="Left">
+                                                        <Grid>
+                                                            <Grid.ColumnDefinitions>
+                                                                <ColumnDefinition Width="Auto"/>
+                                                                <ColumnDefinition Width="*"/>
+                                                            </Grid.ColumnDefinitions>
+                                                            <Image Grid.Column="0" Width="22" Height="22"
+                                                               Source="{Binding PlatformLogo}"
+                                                               Margin="0,0,4,0">
+                                                            <Image.Style>
+                                                                <Style TargetType="Image">
+                                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                                    <Style.Triggers>
+                                                                        <DataTrigger Binding="{Binding Source, RelativeSource={RelativeSource Self}}" Value="{x:Null}">
+                                                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                                                        </DataTrigger>
+                                                                    </Style.Triggers>
+                                                                </Style>
+                                                            </Image.Style>
+                                                            <Image.ToolTip>
+                                                                <TextBlock Text="{Binding PlatformName}"/>
+                                                            </Image.ToolTip>
+                                                        </Image>
+                                                            <Border Grid.Column="1" CornerRadius="4" Background="#FFE6E6E6" Padding="5,1">
+                                                                <TextBlock Text="{Binding DeliveryPlatfornName}" 
+                                                                            FontWeight="SemiBold" 
+                                                                            FontSize="12" 
+                                                                           TextWrapping="Wrap" TextTrimming="None"
+                                                                            Foreground="Black"
+                                                                            VerticalAlignment="Center"/>        
+                                                            </Border>
+                                                        </Grid>
+                                                  </Border>
+                                                    <StackPanel Grid.Column="1" Grid.Row="1" Orientation="Vertical" VerticalAlignment="Center">
+                                                        <StackPanel Orientation="Horizontal">
+                                                            <TextBlock Text="{Binding OrderNumber}" FontWeight="Bold" FontSize="16" Margin="0,0,2,0"/>
+                                                            <Border Margin="4,0,0,0" BorderThickness="2" BorderBrush="{Binding OrderTypeDisplay, Converter={StaticResource OrderTypeToBadgeBrushConverter}}" CornerRadius="10" Padding="8,2" VerticalAlignment="Center">
+                                                                <TextBlock Text="{Binding OrderTypeDisplay}" FontSize="11" FontWeight="SemiBold" Foreground="{Binding OrderTypeDisplay, Converter={StaticResource OrderTypeToBadgeBrushConverter}}"/>
+                                                            </Border>
+                                                        </StackPanel>
+                                                        <TextBlock Text="{Binding CreatedAt, Converter={StaticResource CountryBasedDateTimeConverter}}" FontSize="10" Foreground="Gray"/>
+                                                    </StackPanel>
+                                                    <TextBlock Grid.Column="2" Text="{Binding DisplayTotal, Converter={StaticResource CurrencyFormatConverter}}" FontWeight="Bold" FontSize="14" HorizontalAlignment="Right" Margin="30,7,5,0"/>
+                                                    
+                                                    <!-- Action Buttons Container -->
+                                                    <StackPanel Grid.Column="2" Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,0,0">
+                                                        <!-- COMPLETE Button for Delivery Orders -->
+                                                        <Button Command="{Binding DataContext.MoveToCompletedCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                            CommandParameter="{Binding}"
+                                                            Width="70" Height="28" ToolTip="Mark as Completed">
+                                                            <Button.Style>
+                                                                <Style TargetType="Button">
+                                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                                    <Setter Property="Background" Value="#4CAF50"/>
+                                                                    <Setter Property="Foreground" Value="White"/>
+                                                                    <Setter Property="FontWeight" Value="Bold"/>
+                                                                    <Setter Property="BorderBrush" Value="Transparent"/>
+                                                                    <Setter Property="FontSize" Value="10"/>
+                                                                    <Style.Triggers>
+                                                                        <DataTrigger Binding="{Binding OrderType}" Value="{x:Static models:OrderType.Delivery}">
+                                                                            <Setter Property="Visibility" Value="Visible"/>
+                                                                        </DataTrigger>
+                                                                    </Style.Triggers>
+                                                                </Style>
+                                                            </Button.Style>
+                                                            <TextBlock Text="COMPLETE"/>
+                                                        </Button>
+
+                                                        <!-- COMPLETE Button for Table Order Dine-in -->
+                                                        <Button Command="{Binding DataContext.MoveToCompletedCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                            CommandParameter="{Binding}"
+                                                            Width="70" Height="28" ToolTip="Move to Completed" Margin="0,0,0,0">
+                                                            <Button.Style>
+                                                                <Style TargetType="Button">
+                                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                                    <Setter Property="Background" Value="#FF9800"/>
+                                                                    <Setter Property="Foreground" Value="White"/>
+                                                                    <Setter Property="FontWeight" Value="Bold"/>
+                                                                    <Setter Property="BorderBrush" Value="Transparent"/>
+                                                                    <Setter Property="FontSize" Value="10"/>
+                                                                    <Style.Triggers>
+                                                                        <DataTrigger Binding="{Binding IsTableOrderDineIn}" Value="True">
+                                                                            <Setter Property="Visibility" Value="Visible"/>
+                                                                        </DataTrigger>
+                                                                    </Style.Triggers>
+                                                                </Style>
+                                                            </Button.Style>
+                                                            <TextBlock Text="COMPLETE"/>
+                                                        </Button>
+                                                        
+                                                        <!-- FINISH Button for Dine-in Orders (hidden for table order Dine-in; they use COMPLETE above) -->
+                                                        <Button Command="{Binding DataContext.MoveToFinishedCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                            CommandParameter="{Binding}"
+                                                            Width="70" Height="28" ToolTip="Mark as Finished">
+                                                            <Button.Style>
+                                                                <Style TargetType="Button">
+                                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                                    <Setter Property="Background" Value="#FF9800"/>
+                                                                    <Setter Property="Foreground" Value="White"/>
+                                                                    <Setter Property="FontWeight" Value="Bold"/>
+                                                                    <Setter Property="BorderBrush" Value="Transparent"/>
+                                                                    <Setter Property="FontSize" Value="10"/>
+                                                                    <Style.Triggers>
+                                                                        <DataTrigger Binding="{Binding IsTableOrderDineIn}" Value="True">
+                                                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                                                        </DataTrigger>
+                                                                        <DataTrigger Binding="{Binding OrderType}" Value="{x:Static models:OrderType.DineIn}">
+                                                                            <Setter Property="Visibility" Value="Visible"/>
+                                                                        </DataTrigger>
+                                                                    </Style.Triggers>
+                                                                </Style>
+                                                            </Button.Style>
+                                                            <TextBlock Text="FINISH"/>
+                                                        </Button>
+                                                    </StackPanel>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        </Grid>
+                        </ScrollViewer>
+                        <Border x:Name="ServedBottomFade" VerticalAlignment="Bottom" Height="80" IsHitTestVisible="False">
+                            <Border.Background>
+                                <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                    <GradientStop Color="Transparent" Offset="0"/>
+                                    <GradientStop Color="#D0F8F8F8" Offset="0.5"/>
+                                    <GradientStop Color="#F8F8F8" Offset="1"/>
+                                </LinearGradientBrush>
+                            </Border.Background>
+                        </Border>
+                        </Grid>
+                    </StackPanel>
+                </StackPanel>
+            </StackPanel>
+            
+            <!-- Loading Overlay -->
+            <Grid Grid.ColumnSpan="3" 
+                  Visibility="{Binding HasAnyOrderLoading, Converter={StaticResource BooleanToVisibilityConverter}}" 
+                  Background="#80BDBDBD">
+                <controls:LoadingIndicator HorizontalAlignment="Center" 
+                                           VerticalAlignment="Center" 
+                                           ProgressRingSize="70"/>
+            </Grid>
+        </Grid>
+    </materialDesign:DialogHost>
+    <!-- Overlay for split payment: warnings and cash-drawer errors while RootDialog shows split/checkout (same host cannot stack two dialogs). -->
+    <materialDesign:DialogHost Identifier="KitchenSplitOverlayDialogHost" Panel.ZIndex="1"/>
+    </Grid>
+</Page> 

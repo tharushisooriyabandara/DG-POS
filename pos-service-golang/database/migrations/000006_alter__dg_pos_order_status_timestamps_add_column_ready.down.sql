@@ -1,0 +1,1 @@
+ALTER TABLE dg_pos_order_status_timestamps DROP COLUMN ready;

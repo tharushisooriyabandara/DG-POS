@@ -1,0 +1,20 @@
+CREATE TABLE `webshop_payments` (
+    `id` int UNSIGNED NOT NULL AUTO_INCREMENT,
+    `order_tmp_id` int DEFAULT NULL,
+    `order_id` int DEFAULT NULL,
+    `payment_amount` int DEFAULT NULL,
+    `stripe_fee` int NOT NULL DEFAULT '0',
+    `has_transferred` tinyint(1) NOT NULL DEFAULT '0',
+    `transferred_amount` int NOT NULL DEFAULT '0',
+    `net_amount` int NOT NULL DEFAULT '0',
+    `payment_id` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+    `uid` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+    `is_refund` tinyint(1) NOT NULL DEFAULT '0',
+    `initiate_refund_process` tinyint(1) NOT NULL DEFAULT '0',
+    `payout_created` tinyint(1) NOT NULL DEFAULT '0',
+    `created_at` TIMESTAMP NULL DEFAULT NULL,
+    `updated_at` TIMESTAMP NULL DEFAULT NULL,
+    `payment_type` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT 'stripe',
+    `payment_status` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT 'PAID',
+    PRIMARY KEY (`id`)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci
